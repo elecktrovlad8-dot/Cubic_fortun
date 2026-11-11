@@ -13,7 +13,7 @@
           type: "VKWebAppInit",
           handler: "VKWebAppInit",
           params: { request_id: 1 },
-           vital: true
+          vital: true
         });
         if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
           window.ReactNativeWebView.postMessage(initPayload);
@@ -38,11 +38,11 @@
   </script>
 
   <!-- Надёжный CDN VK Bridge с автоматическим вызовом при загрузке -->
-  <script src="[https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@2.15.1/dist/browser.min.js](https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@2.15.1/dist/browser.min.js)" onload="window.__onVKBridgeLoaded && window.__onVKBridgeLoaded()"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@2.15.1/dist/browser.min.js" onload="window.__onVKBridgeLoaded && window.__onVKBridgeLoaded()"></script>
 
-  <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
-  <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
-  <link href="[https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap)" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-deep: #080510;
@@ -194,6 +194,7 @@
       text-decoration: none;
       border-bottom: 1px dashed rgba(245, 208, 118, 0.55);
       padding-bottom: 1px;
+      cursor: pointer;
       transition: color 0.15s ease, border-color 0.15s ease;
     }
     .brand-address:hover,
@@ -207,6 +208,7 @@
       font-weight: 700;
       text-decoration: underline;
       text-underline-offset: 2px;
+      cursor: pointer;
     }
     .inline-map-link:hover,
     .inline-map-link:active {
@@ -975,7 +977,7 @@
             <span class="t-rpg">РОЛЕВЫЕ</span> •
             <span class="t-vr">ВИРТУАЛЬНЫЕ</span>
           </div>
-          <a href="[https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am](https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am" target="_blank" rel="noopener noreferrer" class="brand-address">
+          <a href="javascript:void(0)" class="brand-address" onclick="return openYandexMap(event)">
             📍 Шипиловский проезд 49/1
           </a>
         </div>
@@ -1041,7 +1043,7 @@
           <span>🎒 Ваши промокоды</span>
         </div>
         <p class="section-desc">
-          Покажите сохранённый промокод на стойке администратора в клубе <strong>«Настолка»</strong> (<a href="[https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am](https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am)" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловский проезд 49/1</a>). При получении скидки нажмите кнопку «Применить промокод на стойке администратора».
+          Покажите сохранённый промокод на стойке администратора в клубе <strong>«Настолка»</strong> (<a href="javascript:void(0)" class="inline-map-link" onclick="return openYandexMap(event)">Шипиловский проезд 49/1</a>). При получении скидки нажмите кнопку «Применить промокод на стойке администратора».
         </p>
 
         <div class="promo-list" id="promoList"></div>
@@ -1053,7 +1055,7 @@
       <div class="section-card">
         <div class="section-heading">🏰 Игровой клуб «Настолка»</div>
         <p class="section-desc">
-          Уютное пространство на <a href="[https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am](https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am)" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловском проезде 49/1</a>, где настольные игры оживают, а каждая сессия превращается в приключение! Приходите с друзьями или знакомьтесь с новыми людьми — наша команда всегда поможет с выбором игры и правил.
+          Уютное пространство на <a href="javascript:void(0)" class="inline-map-link" onclick="return openYandexMap(event)">Шипиловском проезде 49/1</a>, где настольные игры оживают, а каждая сессия превращается в приключение! Приходите с друзьями или знакомьтесь с новыми людьми — наша команда всегда поможет с выбором игры и правил.
         </p>
 
         <div class="club-features">
@@ -1151,6 +1153,27 @@
   </div>
 
   <script>
+    // Принудительное открытие Яндекс Карт (исключает ошибку 404 на GitHub Pages и работает внутри VK Mini Apps)
+    function openYandexMap(e) {
+      if (e && e.preventDefault) e.preventDefault();
+      var mapUrl = "https://" + "yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am";
+      try {
+        var a = document.createElement("a");
+        a.href = mapUrl;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+      } catch (err) {
+        var win = window.open(mapUrl, "_blank", "noopener,noreferrer");
+        if (!win) {
+          window.location.href = mapUrl;
+        }
+      }
+      return false;
+    }
+
     /**************************************************************
      * 1. БАЗА ПРОРОЧЕСТВ D20 И СКИДКИ (17–20) — РОВНО 1 ИГРА ДНЯ
      **************************************************************/
@@ -1328,7 +1351,7 @@
       [-1,  PHI, 0], [ 1,  PHI, 0], [-1, -PHI, 0], [ 1, -PHI, 0],
       [ 0, -1,  PHI], [ 0,  1,  PHI], [ 0, -1, -PHI], [ 0,  1, -PHI],
       [ PHI, 0, -1], [ PHI, 0,  1], [-PHI, 0, -1], [-PHI, 0,  1]
-    ].map(v => {
+    ].map(function (v) {
       const len = Math.hypot(v[0], v[1], v[2]);
       return { x: v[0] / len, y: v[1] / len, z: v[2] / len };
     });
@@ -1472,7 +1495,7 @@
           const tmp = v1; v1 = v2; v2 = tmp;
         }
 
-        FACES.push({ num, v0, v1, v2, center, normal: uz });
+        FACES.push({ num: num, v0: v0, v1: v1, v2: v2, center: center, normal: uz });
 
         const rotMat = [
           ux.x, ux.y, ux.z,
@@ -1582,7 +1605,7 @@
         });
       }
 
-      visibleFaces.sort((a, b) => a.avgZ - b.avgZ);
+      visibleFaces.sort(function (a, b) { return a.avgZ - b.avgZ; });
 
       for (let idx = 0; idx < visibleFaces.length; idx++) {
         const vf = visibleFaces[idx];
@@ -1746,7 +1769,7 @@
       const ripple = document.createElement("div");
       ripple.className = "bounce-ripple";
       arena.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 460);
+      setTimeout(function () { ripple.remove(); }, 460);
     }
 
     /**************************************************************
@@ -2202,7 +2225,6 @@
       }
     ];
 
-    // Нормализация строки для поиска (приведение к нижнему регистру, замена ё->е, удаление спецсимволов)
     function normalizeText(str) {
       return (str || "")
         .toLowerCase()
@@ -2212,7 +2234,6 @@
         .trim();
     }
 
-    // Проверка совпадения букв по порядку (subsequence): например, "бнкр" найдёт "бункер", "имж" -> "имаджинариум"
     function isSubsequence(shortStr, longStr) {
       if (shortStr.length < 2) return false;
       let i = 0;
@@ -2226,7 +2247,6 @@
       return i === shortStr.length;
     }
 
-    // Оценка совпадения игры с введёнными буквами (чем выше балл, тем выше игра в списке)
     function scoreGameMatch(game, rawQuery) {
       const q = normalizeText(rawQuery);
       if (!q) return 1;
@@ -2245,20 +2265,13 @@
         const token = queryTokens[t];
         let tokenScore = 0;
 
-        // 1. Прямое вхождение букв в название игры
         if (nameNorm.indexOf(token) !== -1) {
           tokenScore = nameNorm.indexOf(token) === 0 ? 120 : 100;
-        }
-        // 2. Прямое вхождение букв в жанр или ключевые слова (включая русские названия англ. игр)
-        else if (tagNorm.indexOf(token) !== -1 || kwNorm.indexOf(token) !== -1) {
+        } else if (tagNorm.indexOf(token) !== -1 || kwNorm.indexOf(token) !== -1) {
           tokenScore = 80;
-        }
-        // 3. Прямое вхождение букв в описание
-        else if (subNorm.indexOf(token) !== -1) {
+        } else if (subNorm.indexOf(token) !== -1) {
           tokenScore = 60;
-        }
-        // 4. Совпадение букв по порядку внутри любого слова названия или ключевых слов (например "мнкн" -> "манчкин")
-        else if (token.length >= 2) {
+        } else if (token.length >= 2) {
           for (let w = 0; w < words.length; w++) {
             if (words[w].length >= token.length && isSubsequence(token, words[w])) {
               tokenScore = 35;
@@ -2268,7 +2281,7 @@
         }
 
         if (tokenScore === 0) {
-          return 0; // Если хотя бы одно введённое слово совсем не совпало
+          return 0;
         }
         totalScore += tokenScore;
       }
@@ -2309,7 +2322,6 @@
       const rawQuery = document.getElementById("gameSearch").value.trim();
       const grid = document.getElementById("gamesGrid");
 
-      // Сначала ищем в выбранной категории
       let scored = [];
       for (let i = 0; i < CLUB_GAMES.length; i++) {
         const g = CLUB_GAMES[i];
@@ -2321,7 +2333,6 @@
         }
       }
 
-      // Если пользователь ввёл буквы в поиск, но в текущей вкладке ничего нет — ищем по всем категориям
       if (rawQuery.length > 0 && scored.length === 0 && currentGameCategory !== "all") {
         for (let i = 0; i < CLUB_GAMES.length; i++) {
           const g = CLUB_GAMES[i];
@@ -2435,7 +2446,6 @@
       } catch (e) {}
     }
 
-    // Если VK Bridge догрузился чуть позже DOMContentLoaded — сразу вызываем инициализацию
     window.__onVKBridgeLoaded = function () {
       initVKNonBlocking();
     };
@@ -2662,4 +2672,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
