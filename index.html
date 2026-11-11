@@ -80,7 +80,7 @@
       padding: 0 14px;
     }
 
-    /* ШАПКА КЛУБА С МАКСИМАЛЬНО КОНТРАСТНОЙ НАДПИСЬЮ «НАСТОЛКА» */
+    /* ШАПКА КЛУБА С ЯРКОЙ НАДПИСЬЮ «НАСТОЛКА» */
     .club-header {
       display: flex;
       align-items: center;
@@ -359,8 +359,30 @@
       transform: scale(0.96);
     }
     .roll-btn:disabled {
-      opacity: 0.7;
-      cursor: wait;
+      background: #231d36;
+      border-color: rgba(255, 255, 255, 0.18);
+      color: var(--text-muted);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    /* Таймер обратного отсчёта до следующего дня */
+    .cooldown-box {
+      margin-top: 12px;
+      font-size: 0.82rem;
+      color: var(--gold-bright);
+      font-weight: 700;
+      display: none;
+      background: rgba(245, 208, 118, 0.1);
+      border: 1px solid rgba(245, 208, 118, 0.35);
+      padding: 8px 14px;
+      border-radius: 12px;
+      max-width: 320px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .cooldown-box.visible {
+      display: block;
     }
 
     /* Карточка результата */
@@ -906,6 +928,11 @@
           🎲 Бросить 3D-кубик D20
         </button>
 
+        <!-- Таймер обратного отсчёта до следующей попытки -->
+        <div class="cooldown-box" id="cooldownBox">
+          ⏳ Следующая попытка через: <span id="cooldownTimer">00:00:00</span>
+        </div>
+
         <!-- Панель результата -->
         <div class="result-panel" id="resultPanel">
           <div class="result-header">
@@ -1029,7 +1056,7 @@
 
   <script>
     /**************************************************************
-     * 1. БАЗА ПРОРОЧЕСТВ D20 И РЕДКИЕ СКИДКИ (5%-20%)
+     * 1. БАЗА ПРОРОЧЕСТВ D20 И СКИДКИ (17–20)
      **************************************************************/
     const D20_OUTCOMES = {
       1: {
@@ -1178,18 +1205,26 @@
       }
     };
 
-    // Взвешенный рандом: скидки 5-20% падают редко (~16% суммарно)
+    /**
+     * СЛОЖНЫЙ ШАНС НА СКИДКУ: ровно 1 к 20 (5% суммарно на все скидочные грани 17..20)
+     * - 20 (скидка 20%): 0.5%
+     * - 19 (скидка 15%): 1.0%
+     * - 18 (скидка 10%): 1.5%
+     * - 17 (скидка 5%):  2.0%
+     * - 1..16 (RPG-пророчества без скидки): 95.0%
+     */
     function getWeightedD20Roll() {
       const r = Math.random() * 100;
-      if (r < 1.5) return 20;            // 1.5% — скидка 20%
-      if (r < 4.5) return 19;            // 3.0% — скидка 15%
-      if (r < 9.5) return 18;            // 5.0% — скидка 10%
-      if (r < 16.0) return 17;           // 6.5% — скидка 5%
+      if (r < 0.5) return 20;            // 0.5% — скидка 20%
+      if (r < 1.5) return 19;            // 1.0% — скидка 15%
+      if (r < 3.0) return 18;            // 1.5% — скидка 10%
+      if (r < 5.0) return 17;            // 2.0% — скидка 5%
+      // Остальные 95% распределяются равномерно между гранями 1..16
       return Math.floor(Math.random() * 16) + 1;
     }
 
     /**************************************************************
-     * 2. СОБСТВЕННЫЙ 3D-ДВИЖОК D20 (ИКОСАЭДР + ПРЫЖКИ + ТЕКСТ НА ГРАНЯХ)
+     * 2. 3D-ДВИЖОК D20 С ТОЧНЫМ СОВПАДЕНИЕМ И РОВНЫМИ ЦИФРАМИ
      **************************************************************/
     const canvas = document.getElementById("d20Canvas");
     const ctx = canvas.getContext("2d");
@@ -1197,12 +1232,12 @@
     let currentFaceValue = 20; // На старте в центре всегда грань 20
     let isRolling = false;
 
-    // Параметры положения кубика во время прыжка
-    let jumpOffsetY = 0;   // Подлёт вверх (в пикселях)
-    let jumpOffsetX = 0;   // Небольшое смещение в сторону при прыжке
-    let jumpScaleZ = 1.0;  // Приближение к камере в воздухе
+    // Параметры прыжка 3D-кубика
+    let jumpOffsetY = 0;
+    let jumpOffsetX = 0;
+    let jumpScaleZ = 1.0;
 
-    // Геометрия правильного 3D-икосаэдра (12 вершин, 20 треугольных граней)
+    // 12 вершин правильного икосаэдра
     const PHI = (1 + Math.sqrt(5)) / 2;
     const RAW_VERTS = [
       [-1,  PHI, 0], [ 1,  PHI, 0], [-1, -PHI, 0], [ 1, -PHI, 0],
@@ -1213,14 +1248,15 @@
       return { x: v[0] / len, y: v[1] / len, z: v[2] / len };
     });
 
+    // 20 треугольных граней
     const RAW_TRIS = [
-      [5, 11, 4],  [5, 4, 9],   [5, 9, 1],   [5, 1, 0],   [5, 0, 11],
-      [1, 9, 8],   [9, 4, 3],   [4, 11, 2],  [11, 0, 10], [0, 1, 7],
+      [5, 11, 4],  [2, 4, 11],  [5, 4, 9],   [5, 9, 1],   [5, 1, 0],
+      [5, 0, 11],  [1, 9, 8],   [9, 4, 3],   [11, 0, 10], [0, 1, 7],
       [3, 8, 9],   [3, 4, 2],   [2, 11, 10], [10, 0, 7],  [7, 1, 8],
       [3, 2, 6],   [2, 10, 6],  [10, 7, 6],  [7, 8, 6],   [8, 3, 6]
     ];
 
-    // Распределяем числа 1..20 так, чтобы в центре была 20, а прямо под ней 8 (как на логотипе Настолки!)
+    // Уникальные числа 1..20 на гранях
     const FACE_NUMBERS = [
       20, 8, 14, 2, 12,
       18, 6, 16, 4, 10,
@@ -1228,7 +1264,6 @@
       1, 17, 5, 13, 9
     ];
 
-    // Векторная математика
     function vecAdd(a, b) { return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }; }
     function vecSub(a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
     function vecScale(a, s) { return { x: a.x * s, y: a.y * s, z: a.z * s }; }
@@ -1245,12 +1280,10 @@
       return { x: a.x / l, y: a.y / l, z: a.z / l };
     }
 
-    // Подготавливаем 20 граней и точные кватернионы ориентации для каждого числа 1..20
     const FACES = [];
     const TARGET_QUATS = {};
 
     function matToQuat(m) {
-      // m — массив 3x3 построчно: [m00, m01, m02, m10, m11, m12, m20, m21, m22]
       const tr = m[0] + m[4] + m[8];
       let w, x, y, z;
       if (tr > 0) {
@@ -1332,7 +1365,6 @@
     }
 
     function rotateVecByQuat(v, q) {
-      // v' = v + 2 * cross(q.xyz, cross(q.xyz, v) + q.w * v)
       const u = { x: q.x, y: q.y, z: q.z };
       const c1 = vecCross(u, v);
       const c2 = vecAdd(c1, vecScale(v, q.w));
@@ -1349,20 +1381,21 @@
         let v2 = RAW_VERTS[tri[2]];
 
         const center = vecScale(vecAdd(vecAdd(v0, v1), v2), 1 / 3);
-        const uz = vecNorm(center); // Внешняя нормаль грани -> должна смотреть на зрителя (0,0,1)
-
-        // Вектор к вершине v0 вдоль плоскости грани -> должен смотреть вверх (0,1,0)
+        // Нормаль грани направлена наружу (при совпадении с +Z смотрит прямо на игрока)
+        const uz = vecNorm(center);
+        // Направление на верхнюю вершину v0 (при совпадении с +Y вершина треугольника смотрит строго вверх)
         const uy = vecNorm(vecSub(v0, center));
+        // Правая ось грани (+X)
         const ux = vecNorm(vecCross(uy, uz));
 
-        // Проверяем порядок v1 (левый нижний) и v2 (правый нижний)
+        // Упорядочиваем нижние углы: v1 — левый нижний (-X), v2 — правый нижний (+X)
         if (vecDot(vecSub(v1, center), ux) > 0) {
           const tmp = v1; v1 = v2; v2 = tmp;
         }
 
         FACES.push({ num, v0, v1, v2, center, normal: uz });
 
-        // Матрица поворота, которая ставит грань num строго по центру лицом к камере (+Z) и вершиной v0 вверх (+Y)
+        // Матрица поворота, которая ставит грань num строго лицом к экрану (+Z) и строго ровно вершиной вверх (+Y)
         const rotMat = [
           ux.x, ux.y, ux.z,
           uy.x, uy.y, uy.z,
@@ -1383,36 +1416,44 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    // Отрисовка 3D-кубика D20 со всеми 20 гранями, освещением, тенью и контрастными цифрами
+    function projectVertex(v, cx, cy, radius, camDist) {
+      const perspective = camDist / (camDist - v.z);
+      return {
+        x: cx + v.x * radius * perspective,
+        y: cy - v.y * radius * perspective
+      };
+    }
+
+    // Отрисовка 3D-кубика D20
     function drawD20Scene(time) {
       const width = canvas.clientWidth || 340;
       const height = canvas.clientHeight || 310;
       ctx.clearRect(0, 0, width, height);
 
       const centerX = width * 0.5 + jumpOffsetX;
-      const baseCenterY = height * 0.47;
+      const baseCenterY = height * 0.46;
       const centerY = baseCenterY + jumpOffsetY;
 
-      // Лёгкое «дыхание» 3D-кубика в покое, чтобы чувствовался объём
+      // Лёгкое живое дыхание без наклона по оси Z, чтобы выпавшее число всегда стояло идеально ровно
       let renderQuat = activeQuat;
       if (!isRolling) {
         const idleQ = quatFromEuler(
-          Math.sin(time * 0.002) * 0.09,
-          Math.cos(time * 0.0016) * 0.12,
-          Math.sin(time * 0.0013) * 0.03
+          Math.sin(time * 0.002) * 0.05,
+          Math.cos(time * 0.0016) * 0.06,
+          0
         );
         renderQuat = quatMultiply(idleQ, TARGET_QUATS[currentFaceValue]);
       }
 
-      // 1. Рисуем реалистичную тень на столе под кубиком (сжимается при подлёте вверх)
+      // 1. Тень под кубиком на столе
       const heightFactor = Math.max(0, -jumpOffsetY / 85);
       const shadowRx = 72 * (1 - heightFactor * 0.38);
       const shadowRy = 26 * (1 - heightFactor * 0.38);
-      const shadowY = baseCenterY + 86;
+      const shadowY = baseCenterY + 88;
 
       ctx.save();
       const shGrad = ctx.createRadialGradient(centerX, shadowY, 4, centerX, shadowY, shadowRx);
-      shGrad.addColorStop(0, `rgba(0, 0, 0, ${0.75 - heightFactor * 0.35})`);
+      shGrad.addColorStop(0, `rgba(0, 0, 0, ${0.76 - heightFactor * 0.35})`);
       shGrad.addColorStop(0.55, `rgba(25, 6, 48, ${0.42 - heightFactor * 0.2})`);
       shGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = shGrad;
@@ -1421,10 +1462,10 @@
       ctx.fill();
       ctx.restore();
 
-      // 2. Проецируем 20 граней в 3D с перспективой
-      const baseRadius = Math.min(width, height) * 0.32 * jumpScaleZ;
+      // 2. Проекция 20 граней
+      const baseRadius = Math.min(width, height) * 0.33 * jumpScaleZ;
       const camDist = 3.6;
-      const lightDir = vecNorm({ x: -0.35, y: 0.55, z: 0.85 });
+      const lightDir = vecNorm({ x: -0.3, y: 0.55, z: 0.85 });
 
       const visibleFaces = [];
 
@@ -1434,14 +1475,13 @@
         const rv1 = rotateVecByQuat(f.v1, renderQuat);
         const rv2 = rotateVecByQuat(f.v2, renderQuat);
 
-        // Проекция в экранные координаты (ось Y в 3D направлена вверх, на экране вниз)
         const p0 = projectVertex(rv0, centerX, centerY, baseRadius, camDist);
         const p1 = projectVertex(rv1, centerX, centerY, baseRadius, camDist);
         const p2 = projectVertex(rv2, centerX, centerY, baseRadius, camDist);
 
-        // Проверка видимости грани (Backface culling по площади 2D-треугольника)
+        // В экранных координатах (ось Y вниз) передние грани (p0 сверху, p1 слева внизу, p2 справа внизу) имеют cross2D < 0
         const cross2D = (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
-        if (cross2D <= 0) continue;
+        if (cross2D >= 0) continue;
 
         const rNorm = rotateVecByQuat(f.normal, renderQuat);
         const avgZ = (rv0.z + rv1.z + rv2.z) / 3;
@@ -1454,21 +1494,19 @@
         });
       }
 
-      // Сортируем грани по глубине Z (от дальних к ближним)
+      // Сортируем от дальних к ближним (чтобы передняя грань рисовалась поверх)
       visibleFaces.sort((a, b) => a.avgZ - b.avgZ);
 
-      // 3. Рисуем каждую видимую грань и её 3D-цифру
+      // 3. Рисуем грани и цифры
       for (const vf of visibleFaces) {
         const { p0, p1, p2, rNorm, num } = vf;
 
-        // Освещение грани
         const diffuse = Math.max(0, vecDot(rNorm, lightDir));
         const frontness = Math.max(0, rNorm.z);
 
-        // Насыщенный фиолетовый цвет грани в стиле логотипа
-        const rCol = Math.round(32 + diffuse * 65 + frontness * 28);
-        const gCol = Math.round(10 + diffuse * 22 + frontness * 8);
-        const bCol = Math.round(62 + diffuse * 105 + frontness * 48);
+        const rCol = Math.round(34 + diffuse * 62 + frontness * 32);
+        const gCol = Math.round(10 + diffuse * 20 + frontness * 10);
+        const bCol = Math.round(66 + diffuse * 102 + frontness * 52);
 
         ctx.save();
         ctx.beginPath();
@@ -1480,13 +1518,13 @@
         ctx.fillStyle = `rgb(${rCol}, ${gCol}, ${bCol})`;
         ctx.fill();
 
-        // Золотые рёбра икосаэдра
+        // Золотые рёбра
         ctx.lineJoin = "round";
-        ctx.lineWidth = frontness > 0.75 ? 2.8 : 1.8;
-        ctx.strokeStyle = frontness > 0.75 ? "#ffe89e" : "rgba(245, 208, 118, 0.75)";
+        ctx.lineWidth = frontness > 0.82 ? 3.0 : 1.8;
+        ctx.strokeStyle = frontness > 0.82 ? "#ffe89e" : "rgba(245, 208, 118, 0.75)";
         ctx.stroke();
 
-        // Внутренняя декоративная рамка на грани (как на логотипе)
+        // Внутренняя треугольная окантовка грани
         const cx = (p0.x + p1.x + p2.x) / 3;
         const cy = (p0.y + p1.y + p2.y) / 3;
         ctx.beginPath();
@@ -1495,18 +1533,17 @@
         ctx.lineTo(cx + (p2.x - cx) * 0.82, cy + (p2.y - cy) * 0.82);
         ctx.closePath();
         ctx.lineWidth = 1.1;
-        ctx.strokeStyle = "rgba(199, 125, 255, 0.45)";
+        ctx.strokeStyle = frontness > 0.82 ? "rgba(255, 232, 158, 0.55)" : "rgba(199, 125, 255, 0.4)";
         ctx.stroke();
 
-        // 4. Перспективная 3D-отрисовка числа (1..20) прямо на плоскости треугольной грани
+        // 4. Рисуем цифру строго по осям треугольника (v1->v2 — горизонталь вправо, v0->midBottom — вертикаль вниз)
         const midBottomX = (p1.x + p2.x) * 0.5;
         const midBottomY = (p1.y + p2.y) * 0.5;
 
-        // Локальные оси X и Y грани на экране
-        const exX = (p2.x - p1.x) / 110;
-        const exY = (p2.y - p1.y) / 110;
-        const eyX = (midBottomX - p0.x) / 95;
-        const eyY = (midBottomY - p0.y) / 95;
+        const exX = (p2.x - p1.x) / 108;
+        const exY = (p2.y - p1.y) / 108;
+        const eyX = (midBottomX - p0.x) / 94;
+        const eyY = (midBottomY - p0.y) / 94;
 
         ctx.transform(exX, exY, eyX, eyY, cx, cy);
 
@@ -1514,21 +1551,19 @@
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        // Плотная тёмная обводка, чтобы число идеально читалось
-        ctx.lineWidth = 7.5;
+        ctx.lineWidth = 8;
         ctx.strokeStyle = "#090214";
-        ctx.strokeText(String(num), 0, 3);
+        ctx.strokeText(String(num), 0, 4);
 
-        // Яркая золотисто-белая заливка цифры
-        ctx.fillStyle = num >= 17 ? "#fff5c0" : "#ffffff";
-        ctx.fillText(String(num), 0, 3);
+        ctx.fillStyle = num >= 17 ? "#fff3b0" : "#ffffff";
+        ctx.fillText(String(num), 0, 4);
 
-        // Точка-подчёркивание под 6 и 9
+        // Линия внизу у 6 и 9
         if (num === 6 || num === 9) {
           ctx.beginPath();
-          ctx.moveTo(-10, 22);
-          ctx.lineTo(10, 22);
-          ctx.lineWidth = 4;
+          ctx.moveTo(-10, 23);
+          ctx.lineTo(10, 23);
+          ctx.lineWidth = 4.2;
           ctx.strokeStyle = "#090214";
           ctx.stroke();
           ctx.lineWidth = 2.2;
@@ -1542,29 +1577,19 @@
       requestAnimationFrame(drawD20Scene);
     }
 
-    function projectVertex(v, cx, cy, radius, camDist) {
-      const perspective = camDist / (camDist - v.z);
-      return {
-        x: cx + v.x * radius * perspective,
-        y: cy - v.y * radius * perspective
-      };
-    }
-
-    // Анимация 3D-подлёта, вращения и упругих отскоков кубика
+    // Анимация 3D-прыжка, вращения и отскоков с точной фиксацией на грани targetValue
     function animate3DJumpAndBounce(targetValue, onDone) {
       const startQuat = { ...TARGET_QUATS[currentFaceValue] };
       const endQuat = { ...TARGET_QUATS[targetValue] };
 
-      const duration = 1350; // 1.35 сек живого прыжка и отскоков
+      const duration = 1400;
       const startTime = performance.now();
+      const dirX = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 10);
 
-      // Случайное направление небольшого бокового отклонения при подпрыгивании
-      const dirX = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 12);
-
-      // Полные обороты 3D-вращения в воздухе (кратны 2*PI, чтобы в конце точно встать на грань targetValue)
+      // Чётное число оборотов (4*PI), чтобы кватернион вращения в конце (t=1) равнялся строго единице (+1)
       const spinsX = 2 * Math.PI * 2;
       const spinsY = 2 * Math.PI * 2;
-      const spinsZ = 1 * Math.PI * 2;
+      const spinsZ = 2 * Math.PI * 2;
 
       const tBounce1 = 0.48;
       const tBounce2 = 0.78;
@@ -1574,15 +1599,12 @@
       function step(now) {
         const t = Math.min(1, (now - startTime) / duration);
 
-        // 1. Вертикальные прыжки (подлёт вверх и 2 небольших отскока)
         if (t < tBounce1) {
-          // Первый подлёт вверх
           const u = t / tBounce1;
           jumpOffsetY = -Math.sin(u * Math.PI) * 68;
           jumpScaleZ = 1 + Math.sin(u * Math.PI) * 0.22;
           jumpOffsetX = Math.sin(u * Math.PI) * dirX;
         } else if (t < tBounce2) {
-          // Первый отскок от стола
           if (!b1Done) {
             b1Done = true;
             playBounceSound(1.0);
@@ -1594,7 +1616,6 @@
           jumpScaleZ = 1 + Math.sin(u * Math.PI) * 0.1;
           jumpOffsetX = -Math.sin(u * Math.PI) * (dirX * 0.45);
         } else if (t < tBounce3) {
-          // Второй маленький отскок
           if (!b2Done) {
             b2Done = true;
             playBounceSound(0.6);
@@ -1606,7 +1627,6 @@
           jumpScaleZ = 1 + Math.sin(u * Math.PI) * 0.03;
           jumpOffsetX = Math.sin(u * Math.PI) * (dirX * 0.15);
         } else {
-          // Финальная посадка в центр
           if (!b3Done) {
             b3Done = true;
             playBounceSound(0.3);
@@ -1616,7 +1636,6 @@
           jumpOffsetX = 0;
         }
 
-        // 2. Плавное 3D-вращение с торможением точно на выпавшую грань
         const ease = 1 - Math.pow(1 - t, 3);
         const baseQ = quatSlerp(startQuat, endQuat, ease);
         const spinQ = quatFromEuler(
@@ -1650,10 +1669,29 @@
     }
 
     /**************************************************************
-     * 3. ОБРАБОТКА БРОСКА (БЕЗ ОГРАНИЧЕНИЙ ПО КОЛИЧЕСТВУ РАЗ!)
+     * 3. СИСТЕМА БРОСКА «1 РАЗ В ДЕНЬ» И ТАЙМЕР ОБРАТНОГО ОТСЧЁТА
      **************************************************************/
+    function getTodayString() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function canRollToday() {
+      return appState.lastRollDate !== getTodayString();
+    }
+
     function handleRollClick() {
       if (isRolling) return;
+
+      if (!canRollToday()) {
+        showToast("Кубик уже брошен сегодня! Следующая попытка завтра 🎲");
+        triggerHaptic("light");
+        return;
+      }
+
       isRolling = true;
 
       const rollBtn = document.getElementById("rollBtn");
@@ -1686,19 +1724,14 @@
     function finishRoll(value) {
       const outcome = D20_OUTCOMES[value];
       const hasDiscount = outcome.discount > 0;
-      const rollBtn = document.getElementById("rollBtn");
-      const landedPill = document.getElementById("landedNumberPill");
-
-      rollBtn.disabled = false;
-      rollBtn.textContent = "🎲 Бросить 3D-кубик ещё раз";
-
-      landedPill.textContent = hasDiscount
-        ? `🎉 Выпало: ${value} (Скидка ${outcome.discount}%!) • Нажми ещё!`
-        : `✨ Выпало число: ${value} • Нажми, чтобы бросить ещё`;
 
       triggerHaptic("heavy");
       playFanfare(hasDiscount);
       spawnBurstParticles(hasDiscount);
+
+      // Фиксируем сегодняшний бросок
+      appState.lastRollDate = getTodayString();
+      appState.lastRollValue = value;
 
       let generatedCode = null;
       if (hasDiscount) {
@@ -1716,16 +1749,19 @@
           title: outcome.title,
           date: nowStr
         });
-        saveState();
-        renderPromos();
       }
 
+      saveState();
+      renderPromos();
       displayRollResult(value, generatedCode);
+      updateDailyUI();
       isRolling = false;
     }
 
     function displayRollResult(value, promoCode = null) {
       const outcome = D20_OUTCOMES[value];
+      if (!outcome) return;
+
       const panel = document.getElementById("resultPanel");
       const badge = document.getElementById("resBadge");
       const luckPct = document.getElementById("resLuckPercent");
@@ -1741,16 +1777,72 @@
       prophecy.textContent = outcome.prophecy;
       gameRec.innerHTML = `🎲 <strong>Игра дня для вас в «Настолке»:</strong> ${outcome.game}`;
 
-      if (outcome.discount > 0 && promoCode) {
+      if (outcome.discount > 0) {
+        const codeToShow =
+          promoCode ||
+          (appState.promos[0] ? appState.promos[0].code : "NASTOLKA-PROMO");
         document.getElementById("lootDiscountLabel").textContent =
           `🎉 Выпала редкая скидка ${outcome.discount}%!`;
-        document.getElementById("lootCodeValue").textContent = promoCode;
+        document.getElementById("lootCodeValue").textContent = codeToShow;
         lootBox.classList.add("show");
       } else {
         lootBox.classList.remove("show");
       }
 
       panel.classList.add("show");
+    }
+
+    function updateDailyUI() {
+      const rollBtn = document.getElementById("rollBtn");
+      const cooldownBox = document.getElementById("cooldownBox");
+      const landedPill = document.getElementById("landedNumberPill");
+
+      if (!canRollToday() && appState.lastRollValue) {
+        const val = Number(appState.lastRollValue);
+        const out = D20_OUTCOMES[val];
+        currentFaceValue = val;
+        activeQuat = { ...TARGET_QUATS[val] };
+
+        rollBtn.disabled = true;
+        rollBtn.textContent = "✅ Бросок на сегодня сделан";
+        cooldownBox.classList.add("visible");
+
+        landedPill.textContent = out && out.discount > 0
+          ? `🎉 Выпало: ${val} (Скидка ${out.discount}%!)`
+          : `✨ Выпало число: ${val} из 20`;
+
+        displayRollResult(val);
+        updateCooldownText();
+      } else {
+        rollBtn.disabled = false;
+        rollBtn.textContent = "🎲 Бросить 3D-кубик D20";
+        cooldownBox.classList.remove("visible");
+        landedPill.textContent = `Грань D20: ${currentFaceValue} • Нажми на кубик!`;
+      }
+    }
+
+    function updateCooldownText() {
+      const timerSpan = document.getElementById("cooldownTimer");
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const diff = Math.max(0, tomorrow - now);
+      const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
+      const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+      const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+      timerSpan.textContent = `${h}:${m}:${s}`;
+    }
+
+    function startCooldownTicker() {
+      setInterval(() => {
+        if (canRollToday()) {
+          const cooldownBox = document.getElementById("cooldownBox");
+          if (cooldownBox.classList.contains("visible")) {
+            updateDailyUI();
+          }
+          return;
+        }
+        updateCooldownText();
+      }, 1000);
     }
 
     /**************************************************************
@@ -1794,14 +1886,16 @@
     ];
 
     /**************************************************************
-     * 5. ХРАНИЛИЩЕ ПРОМОКОДОВ, ЗВУК И НЕБЛОКИРУЮЩИЙ VK BRIDGE
+     * 5. ХРАНИЛИЩЕ ДАННЫХ, ЗВУК И НЕБЛОКИРУЮЩИЙ VK BRIDGE
      **************************************************************/
-    const STORAGE_KEY = "nastolka_d20_state_v2";
+    const STORAGE_KEY = "nastolka_d20_state_v3";
     let soundEnabled = true;
     let currentGameCategory = "all";
     let pendingDeletePromoId = null;
 
     let appState = {
+      lastRollDate: null,
+      lastRollValue: null,
       promos: []
     };
 
@@ -1810,8 +1904,10 @@
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
           const parsed = JSON.parse(raw);
-          if (parsed && Array.isArray(parsed.promos)) {
-            appState.promos = parsed.promos;
+          if (parsed && typeof parsed === "object") {
+            appState.lastRollDate = parsed.lastRollDate || null;
+            appState.lastRollValue = parsed.lastRollValue || null;
+            appState.promos = Array.isArray(parsed.promos) ? parsed.promos : [];
           }
         }
       } catch (e) {}
@@ -1847,8 +1943,14 @@
           .then(vkData => {
             if (vkData && vkData.keys && vkData.keys[0] && vkData.keys[0].value) {
               const parsed = JSON.parse(vkData.keys[0].value);
-              if (parsed && Array.isArray(parsed.promos)) {
-                appState.promos = parsed.promos;
+              if (parsed && typeof parsed === "object") {
+                appState.lastRollDate = parsed.lastRollDate || appState.lastRollDate;
+                appState.lastRollValue = parsed.lastRollValue || appState.lastRollValue;
+                if (Array.isArray(parsed.promos)) {
+                  appState.promos = parsed.promos;
+                }
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+                updateDailyUI();
                 renderPromos();
               }
             }
@@ -1944,7 +2046,7 @@
         list.innerHTML = `
           <div class="empty-state">
             У вас пока нет сохранённых промокодов.<br><br>
-            Бросайте 3D-кубик D20 — на гранях <strong>17, 18, 19 и 20</strong> выпадают скидки от 5% до 20%!
+            Бросайте 3D-кубик D20 каждый день — на гранях <strong>17, 18, 19 и 20</strong> выпадают редкие скидки от 5% до 20%!
           </div>
         `;
         return;
@@ -2059,7 +2161,7 @@
         const p = document.createElement("div");
         p.className = "burst-particle";
         p.style.left = "50%";
-        p.style.top = "47%";
+        p.style.top = "46%";
         p.style.background = isGold
           ? i % 2 === 0 ? "#ffe8a3" : "#9d4edd"
           : i % 2 === 0 ? "#c77dff" : "#00e5ff";
@@ -2100,12 +2202,14 @@
       setTimeout(() => t.classList.remove("show"), 2400);
     }
 
-    // Мгновенный запуск при открытии страницы
+    // Запуск приложения
     window.addEventListener("DOMContentLoaded", () => {
       createBackgroundSparks();
       loadLocalState();
       resizeCanvas();
       window.addEventListener("resize", resizeCanvas);
+      updateDailyUI();
+      startCooldownTicker();
       requestAnimationFrame(drawD20Scene);
       renderPromos();
       renderGames();
