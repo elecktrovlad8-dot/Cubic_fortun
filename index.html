@@ -4,29 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Игровой клуб «Настолка» — Кубик Судьбы D20</title>
-  <!-- Официальный SDK VK Bridge -->
-  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
-  <!-- 3D-движок Three.js для реального физического 3D-кубика D20 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Официальный SDK VK Bridge (не блокирует работу вне ВК) -->
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js" async></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-deep: #080610;
-      --bg-card: #130f24;
-      --bg-card-light: #1c1635;
+      --bg-deep: #080510;
+      --bg-card: #140e28;
       --purple-neon: #9d4edd;
       --purple-glow: #c77dff;
-      --purple-dark: #3c096c;
-      --gold-main: #f3cf7a;
-      --gold-bright: #fff3c4;
-      --gold-dark: #b58932;
+      --gold-main: #f5d076;
+      --gold-bright: #fff5c8;
+      --gold-dark: #b88728;
       --cyan-vr: #00e5ff;
       --danger: #ff4d6d;
-      --success: #2ec4b6;
-      --text-main: #f8f5ff;
-      --text-muted: #b5aad0;
+      --text-main: #ffffff;
+      --text-muted: #bdb2d9;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -42,9 +37,9 @@
     body {
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 50% 12%, rgba(157, 78, 221, 0.28) 0%, transparent 55%),
+        radial-gradient(circle at 50% 10%, rgba(157, 78, 221, 0.32) 0%, transparent 55%),
         radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
-        radial-gradient(circle at 15% 75%, rgba(243, 207, 122, 0.08) 0%, transparent 40%);
+        radial-gradient(circle at 15% 75%, rgba(245, 208, 118, 0.1) 0%, transparent 40%);
       color: var(--text-main);
       font-family: 'Montserrat', sans-serif;
       min-height: 100vh;
@@ -53,7 +48,7 @@
       padding-bottom: calc(92px + var(--safe-bottom));
     }
 
-    /* Фоновые магические искры */
+    /* Фоновые искры */
     .bg-particles {
       position: fixed;
       inset: 0;
@@ -72,8 +67,8 @@
     }
     @keyframes floatUp {
       0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-      20% { opacity: 0.55; }
-      80% { opacity: 0.55; }
+      20% { opacity: 0.6; }
+      80% { opacity: 0.6; }
       100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
     }
 
@@ -85,16 +80,16 @@
       padding: 0 14px;
     }
 
-    /* ШАПКА КЛУБА — ВЫСОКАЯ КОНТРАСТНОСТЬ И ЧИТАЕМОСТЬ */
+    /* ШАПКА КЛУБА С МАКСИМАЛЬНО КОНТРАСТНОЙ НАДПИСЬЮ «НАСТОЛКА» */
     .club-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(145deg, #21173b 0%, #120c24 100%);
+      background: linear-gradient(145deg, #251844 0%, #120b24 100%);
       border: 2px solid var(--gold-main);
       border-radius: 20px;
       padding: 12px 14px;
-      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7), 0 0 18px rgba(157, 78, 221, 0.35);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.75), 0 0 20px rgba(157, 78, 221, 0.4);
       margin-bottom: 16px;
     }
 
@@ -105,17 +100,17 @@
     }
 
     .logo-box {
-      width: 56px;
-      height: 56px;
+      width: 58px;
+      height: 58px;
       border-radius: 50%;
       border: 2px solid var(--gold-bright);
-      background: radial-gradient(circle, #3b1966 0%, #0d0818 100%);
+      background: radial-gradient(circle, #431c75 0%, #0d0818 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       flex-shrink: 0;
-      box-shadow: 0 0 16px rgba(199, 125, 255, 0.65);
+      box-shadow: 0 0 16px rgba(199, 125, 255, 0.7);
     }
 
     .logo-box img {
@@ -124,56 +119,53 @@
       object-fit: cover;
     }
 
-    /* Чёткий, яркий и заметный заголовок НАСТОЛКА без прозрачного текста */
     .brand-title {
       font-family: 'Montserrat', sans-serif;
-      font-size: 1.45rem;
+      font-size: 1.55rem;
       font-weight: 900;
       letter-spacing: 2px;
       text-transform: uppercase;
-      color: #fff6d6;
+      color: #fff8dc;
+      -webkit-text-stroke: 1px #24083d;
       text-shadow:
-        0 2px 0 #2a0845,
-        0 3px 6px rgba(0, 0, 0, 0.95),
-        0 0 14px rgba(243, 207, 122, 0.75),
-        0 0 24px rgba(157, 78, 221, 0.6);
+        0 2px 0 #19042b,
+        0 4px 8px rgba(0, 0, 0, 0.95),
+        0 0 14px rgba(245, 208, 118, 0.85),
+        0 0 26px rgba(157, 78, 221, 0.75);
       line-height: 1.05;
     }
 
     .brand-sub {
-      font-size: 0.66rem;
+      font-size: 0.68rem;
       font-weight: 800;
-      letter-spacing: 0.7px;
+      letter-spacing: 0.6px;
       text-transform: uppercase;
       margin-top: 4px;
-      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.95);
     }
-    .brand-sub .t-board { color: #ffe18d; }
-    .brand-sub .t-rpg { color: #e0aaff; }
-    .brand-sub .t-vr { color: #48cae4; }
+    .brand-sub .t-board { color: #ffe48f; }
+    .brand-sub .t-rpg { color: #e5b8ff; }
+    .brand-sub .t-vr { color: #5ce1ff; }
 
     .brand-address {
-      font-size: 0.72rem;
+      font-size: 0.73rem;
       font-weight: 600;
-      color: #dfd6f5;
+      color: #e6def8;
       margin-top: 3px;
-      display: flex;
-      align-items: center;
-      gap: 4px;
     }
 
     .sound-btn {
-      background: rgba(157, 78, 221, 0.25);
+      background: rgba(157, 78, 221, 0.3);
       border: 1.5px solid var(--gold-main);
-      color: var(--text-main);
-      width: 40px;
-      height: 40px;
+      color: #fff;
+      width: 42px;
+      height: 42px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 1.15rem;
+      font-size: 1.2rem;
       flex-shrink: 0;
       transition: transform 0.15s ease;
     }
@@ -184,20 +176,20 @@
     /* Вкладки */
     .tab-section {
       display: none;
-      animation: fadeIn 0.28s ease;
+      animation: fadeIn 0.25s ease;
     }
     .tab-section.active {
       display: block;
     }
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(5px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Карточка со столом для 3D-броска */
+    /* Карточка со столом и 3D-кубиком */
     .altar-card {
-      background: linear-gradient(180deg, rgba(31, 22, 58, 0.92) 0%, rgba(13, 9, 25, 0.98) 100%);
-      border: 1.5px solid rgba(243, 207, 122, 0.35);
+      background: linear-gradient(180deg, rgba(33, 23, 62, 0.95) 0%, rgba(13, 9, 25, 0.98) 100%);
+      border: 1.5px solid rgba(245, 208, 118, 0.4);
       border-radius: 24px;
       padding: 18px 14px 22px;
       text-align: center;
@@ -208,16 +200,16 @@
 
     .altar-title {
       font-size: 1.15rem;
-      font-weight: 800;
+      font-weight: 900;
       color: var(--gold-bright);
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
+      text-shadow: 0 2px 6px rgba(0, 0, 0, 0.9);
     }
 
     .altar-subtitle {
-      font-size: 0.84rem;
-      color: #e6def7;
+      font-size: 0.85rem;
+      color: #ece6fa;
       margin-top: 6px;
       line-height: 1.45;
       font-weight: 500;
@@ -235,103 +227,106 @@
       font-weight: 700;
       padding: 5px 10px;
       border-radius: 99px;
-      background: rgba(255, 255, 255, 0.07);
-      border: 1px solid rgba(255, 255, 255, 0.16);
-      color: #ddd4f0;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: #e4dcf5;
     }
     .luck-badge.gold {
-      background: rgba(243, 207, 122, 0.18);
+      background: rgba(245, 208, 118, 0.2);
       border-color: var(--gold-main);
       color: var(--gold-bright);
     }
 
-    /* 3D ИГРОВОЕ ПОЛЕ (СТОЛ ДЛЯ БРОСКА КУБИКА) */
+    /* 3D-СЦЕНА С КУБИКОМ */
     .dice-arena {
       position: relative;
       width: 100%;
-      height: 300px;
+      height: 310px;
       margin: 14px auto;
-      border-radius: 20px;
+      border-radius: 22px;
       background:
-        radial-gradient(circle at 50% 50%, rgba(123, 44, 191, 0.35) 0%, rgba(22, 12, 42, 0.92) 68%, #0a0614 100%);
-      border: 2px solid rgba(243, 207, 122, 0.45);
+        radial-gradient(circle at 50% 48%, rgba(135, 50, 210, 0.38) 0%, rgba(24, 13, 46, 0.94) 65%, #090514 100%);
+      border: 2px solid rgba(245, 208, 118, 0.5);
       box-shadow:
         inset 0 0 35px rgba(0, 0, 0, 0.9),
         inset 0 0 20px rgba(157, 78, 221, 0.3),
-        0 8px 24px rgba(0, 0, 0, 0.6);
+        0 8px 24px rgba(0, 0, 0, 0.65);
       overflow: hidden;
       cursor: pointer;
       touch-action: manipulation;
+      display: flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    /* Декоративная разметка игрового стола внутри арены */
+    /* Декоративный магический круг на столе */
     .arena-ring {
       position: absolute;
-      left: 50%;
-      top: 50%;
-      width: 230px;
-      height: 230px;
-      transform: translate(-50%, -50%);
+      width: 236px;
+      height: 236px;
       border-radius: 50%;
-      border: 1px dashed rgba(243, 207, 122, 0.28);
+      border: 1.5px dashed rgba(245, 208, 118, 0.3);
       pointer-events: none;
     }
     .arena-ring::before {
       content: '';
       position: absolute;
-      inset: 18px;
+      inset: 16px;
       border-radius: 50%;
-      border: 1px solid rgba(199, 125, 255, 0.2);
+      border: 1px solid rgba(199, 125, 255, 0.22);
     }
 
-    /* Волна удара о стол при отскоке 3D-кубика */
+    /* Волна на столе при отскоке кубика */
     .bounce-ripple {
       position: absolute;
-      width: 20px;
+      left: 50%;
+      top: 56%;
+      width: 36px;
       height: 20px;
       border-radius: 50%;
       border: 2px solid var(--gold-bright);
-      transform: translate(-50%, -50%) scale(0.2);
-      opacity: 0.9;
+      transform: translate(-50%, -50%) scale(0.4);
+      opacity: 0.95;
       pointer-events: none;
       z-index: 2;
-      animation: rippleOut 0.48s ease-out forwards;
+      animation: rippleOut 0.45s ease-out forwards;
     }
     @keyframes rippleOut {
       to {
-        transform: translate(-50%, -50%) scale(4.8);
+        transform: translate(-50%, -50%) scale(4.5);
         opacity: 0;
       }
     }
 
-    #diceCanvasContainer {
-      position: absolute;
-      inset: 0;
+    #d20Canvas {
+      position: relative;
+      z-index: 3;
       width: 100%;
       height: 100%;
-      z-index: 3;
+      display: block;
     }
 
-    /* Плашка текущего числа поверх арены (появляется после приземления для 100% читаемости) */
+    /* Плашка статуса внизу стола */
     .landed-number-pill {
       position: absolute;
       bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 5;
-      background: rgba(14, 9, 28, 0.92);
+      background: rgba(14, 9, 28, 0.94);
       border: 1.5px solid var(--gold-main);
       color: var(--gold-bright);
-      padding: 4px 14px;
+      padding: 5px 15px;
       border-radius: 99px;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: 800;
-      letter-spacing: 0.6px;
-      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
+      letter-spacing: 0.5px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.85);
       pointer-events: none;
+      white-space: nowrap;
     }
 
-    /* Взрыв частиц при финале броска */
+    /* Частицы салюта */
     .burst-particle {
       position: absolute;
       width: 8px;
@@ -355,34 +350,20 @@
       font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 1px;
-      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.75);
       cursor: pointer;
       box-shadow: 0 8px 25px rgba(123, 44, 191, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
-      transition: all 0.2s ease;
+      transition: transform 0.15s ease, box-shadow 0.2s ease;
     }
     .roll-btn:active:not(:disabled) {
-      transform: scale(0.97);
+      transform: scale(0.96);
     }
     .roll-btn:disabled {
-      background: #231d36;
-      border-color: rgba(255, 255, 255, 0.16);
-      color: var(--text-muted);
-      box-shadow: none;
-      cursor: not-allowed;
+      opacity: 0.7;
+      cursor: wait;
     }
 
-    .cooldown-box {
-      margin-top: 12px;
-      font-size: 0.8rem;
-      color: var(--gold-bright);
-      font-weight: 700;
-      display: none;
-    }
-    .cooldown-box.visible {
-      display: block;
-    }
-
-    /* Карточка результата броска */
+    /* Карточка результата */
     .result-panel {
       margin-top: 18px;
       background: linear-gradient(160deg, rgba(38, 27, 72, 0.96), rgba(18, 13, 36, 0.99));
@@ -395,10 +376,10 @@
     }
     .result-panel.show {
       display: block;
-      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      animation: slideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1);
     }
     @keyframes slideUp {
-      from { opacity: 0; transform: translateY(16px); }
+      from { opacity: 0; transform: translateY(14px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
@@ -414,7 +395,7 @@
       display: inline-block;
       padding: 5px 11px;
       border-radius: 8px;
-      font-size: 0.74rem;
+      font-size: 0.75rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -422,7 +403,7 @@
     .tier-fail { background: rgba(255, 77, 109, 0.22); color: #ff8fa3; border: 1px solid rgba(255, 77, 109, 0.5); }
     .tier-normal { background: rgba(157, 78, 221, 0.25); color: #e0aaff; border: 1px solid rgba(199, 125, 255, 0.5); }
     .tier-high { background: rgba(0, 229, 255, 0.18); color: #72efdd; border: 1px solid rgba(0, 229, 255, 0.5); }
-    .tier-legend { background: rgba(243, 207, 122, 0.25); color: var(--gold-bright); border: 1px solid var(--gold-main); }
+    .tier-legend { background: rgba(245, 208, 118, 0.25); color: var(--gold-bright); border: 1px solid var(--gold-main); }
 
     .result-title {
       font-size: 1.08rem;
@@ -451,7 +432,7 @@
     /* Блок выпавшего промокода */
     .loot-promo-box {
       margin-top: 14px;
-      background: linear-gradient(135deg, rgba(243, 207, 122, 0.2), rgba(157, 78, 221, 0.28));
+      background: linear-gradient(135deg, rgba(245, 208, 118, 0.22), rgba(157, 78, 221, 0.3));
       border: 2px solid var(--gold-main);
       border-radius: 14px;
       padding: 12px 14px;
@@ -488,7 +469,7 @@
 
     /* ВКЛАДКА 2: ИНВЕНТАРЬ ПРОМОКОДОВ */
     .section-card {
-      background: linear-gradient(180deg, rgba(28, 22, 53, 0.9) 0%, rgba(14, 10, 26, 0.98) 100%);
+      background: linear-gradient(180deg, rgba(28, 22, 53, 0.92) 0%, rgba(14, 10, 26, 0.98) 100%);
       border: 1.5px solid rgba(199, 125, 255, 0.3);
       border-radius: 24px;
       padding: 20px 16px;
@@ -520,11 +501,9 @@
 
     .promo-item {
       background: linear-gradient(145deg, rgba(38, 27, 71, 0.95), rgba(20, 15, 39, 0.98));
-      border: 1.5px solid rgba(243, 207, 122, 0.45);
+      border: 1.5px solid rgba(245, 208, 118, 0.45);
       border-radius: 18px;
       padding: 14px;
-      position: relative;
-      overflow: hidden;
     }
 
     .promo-top {
@@ -584,10 +563,6 @@
       font-weight: 700;
       cursor: pointer;
       border: none;
-      transition: transform 0.15s ease;
-    }
-    .btn-copy:active, .btn-redeem:active {
-      transform: scale(0.96);
     }
     .btn-copy {
       background: rgba(157, 78, 221, 0.25);
@@ -652,9 +627,6 @@
       font-size: 0.85rem;
       margin-bottom: 10px;
       outline: none;
-    }
-    .search-input:focus {
-      border-color: var(--gold-main);
     }
 
     .filter-chips {
@@ -730,7 +702,7 @@
       right: 0;
       background: rgba(13, 10, 24, 0.96);
       backdrop-filter: blur(14px);
-      border-top: 1.5px solid rgba(243, 207, 122, 0.28);
+      border-top: 1.5px solid rgba(245, 208, 118, 0.28);
       padding: 8px 16px calc(8px + var(--safe-bottom));
       z-index: 50;
     }
@@ -756,7 +728,6 @@
       font-weight: 700;
       cursor: pointer;
       position: relative;
-      transition: all 0.2s ease;
     }
     .nav-btn .nav-icon {
       font-size: 1.25rem;
@@ -785,7 +756,7 @@
       display: flex;
     }
 
-    /* Модальное окно подтверждения удаления администратором */
+    /* Модальное окно погашения */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -856,7 +827,7 @@
       color: #fff;
     }
 
-    /* Уведомление-тост */
+    /* Уведомление */
     .toast {
       position: fixed;
       top: calc(16px + var(--safe-top));
@@ -888,14 +859,14 @@
   <div class="toast" id="toastMsg">Скопировано!</div>
 
   <div class="app-container">
-    <!-- Шапка клуба с ярким контрастным названием НАСТОЛКА -->
+    <!-- Шапка клуба с ярким названием НАСТОЛКА -->
     <header class="club-header">
       <div class="brand-wrap">
         <div class="logo-box">
           <img src="logo.webp" alt="Настолка" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-          <svg style="display:none; width:38px; height:38px;" viewBox="0 0 100 100">
-            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#4a154b" stroke="#fff3c4" stroke-width="5"/>
-            <text x="50" y="53" fill="#fff3c4" font-family="Montserrat, sans-serif" font-weight="900" font-size="34" text-anchor="middle" dominant-baseline="central">20</text>
+          <svg style="display:none; width:40px; height:40px;" viewBox="0 0 100 100">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#4a154b" stroke="#fff5c8" stroke-width="5"/>
+            <text x="50" y="53" fill="#fff5c8" font-family="Montserrat, sans-serif" font-weight="900" font-size="34" text-anchor="middle" dominant-baseline="central">20</text>
           </svg>
         </div>
         <div>
@@ -924,20 +895,16 @@
           <span class="luck-badge gold">17–20 • Скидки 5%–20% + Пророчество</span>
         </div>
 
-        <!-- 3D-АРЕНА ДЛЯ ФИЗИЧЕСКОГО БРОСКА КУБИКА -->
+        <!-- 3D-АРЕНА С НАСТОЯЩИМ ТРЁХМЕРНЫМ D20 -->
         <div class="dice-arena" id="diceArena" onclick="handleRollClick()">
           <div class="arena-ring"></div>
-          <div id="diceCanvasContainer"></div>
-          <div class="landed-number-pill" id="landedNumberPill">Грань D20: 20 • Нажми, чтобы бросить</div>
+          <canvas id="d20Canvas"></canvas>
+          <div class="landed-number-pill" id="landedNumberPill">Грань D20: 20 • Нажми на кубик!</div>
         </div>
 
         <button class="roll-btn" id="rollBtn" onclick="handleRollClick()">
           🎲 Бросить 3D-кубик D20
         </button>
-
-        <div class="cooldown-box" id="cooldownBox">
-          ⏳ Следующий бросок через: <span id="cooldownTimer">00:00:00</span>
-        </div>
 
         <!-- Панель результата -->
         <div class="result-panel" id="resultPanel">
@@ -1211,7 +1178,7 @@
       }
     };
 
-    // Взвешенная вероятность (скидки 5–20% выпадают редко)
+    // Взвешенный рандом: скидки 5-20% падают редко (~16% суммарно)
     function getWeightedD20Roll() {
       const r = Math.random() * 100;
       if (r < 1.5) return 20;            // 1.5% — скидка 20%
@@ -1222,390 +1189,572 @@
     }
 
     /**************************************************************
-     * 2. НАСТОЯЩИЙ 3D-ДВИЖОК КУБИКА D20 (THREE.JS + ФИЗИКА ПРЫЖКОВ)
+     * 2. СОБСТВЕННЫЙ 3D-ДВИЖОК D20 (ИКОСАЭДР + ПРЫЖКИ + ТЕКСТ НА ГРАНЯХ)
      **************************************************************/
-    let scene, camera, renderer, d20Mesh, shadowMesh;
-    let faceTargetQuaternions = {}; // Кватернионы поворота для каждой грани 1..20
+    const canvas = document.getElementById("d20Canvas");
+    const ctx = canvas.getContext("2d");
+
+    let currentFaceValue = 20; // На старте в центре всегда грань 20
     let isRolling = false;
-    let idleRotationEnabled = true;
 
-    // Генерация супер-чёткой текстуры для каждой треугольной грани (1..20)
-    function createFaceTexture(number) {
-      const canvas = document.createElement("canvas");
-      canvas.width = 512;
-      canvas.height = 512;
-      const ctx = canvas.getContext("2d");
+    // Параметры положения кубика во время прыжка
+    let jumpOffsetY = 0;   // Подлёт вверх (в пикселях)
+    let jumpOffsetX = 0;   // Небольшое смещение в сторону при прыжке
+    let jumpScaleZ = 1.0;  // Приближение к камере в воздухе
 
-      // Координаты равностороннего треугольника на текстуре
-      const x0 = 256, y0 = 36;
-      const x1 = 36,  y1 = 430;
-      const x2 = 476, y2 = 430;
+    // Геометрия правильного 3D-икосаэдра (12 вершин, 20 треугольных граней)
+    const PHI = (1 + Math.sqrt(5)) / 2;
+    const RAW_VERTS = [
+      [-1,  PHI, 0], [ 1,  PHI, 0], [-1, -PHI, 0], [ 1, -PHI, 0],
+      [ 0, -1,  PHI], [ 0,  1,  PHI], [ 0, -1, -PHI], [ 0,  1, -PHI],
+      [ PHI, 0, -1], [ PHI, 0,  1], [-PHI, 0, -1], [-PHI, 0,  1]
+    ].map(v => {
+      const len = Math.hypot(v[0], v[1], v[2]);
+      return { x: v[0] / len, y: v[1] / len, z: v[2] / len };
+    });
 
-      // Глубокий фиолетовый фон
-      const bgGrad = ctx.createRadialGradient(256, 285, 20, 256, 285, 260);
-      if (number >= 17) {
-        bgGrad.addColorStop(0, "#6c1d9e");
-        bgGrad.addColorStop(0.65, "#3b0a63");
-        bgGrad.addColorStop(1, "#19032e");
-      } else {
-        bgGrad.addColorStop(0, "#521680");
-        bgGrad.addColorStop(0.7, "#2d094d");
-        bgGrad.addColorStop(1, "#140226");
-      }
-      ctx.fillStyle = bgGrad;
-      ctx.fillRect(0, 0, 512, 512);
+    const RAW_TRIS = [
+      [5, 11, 4],  [5, 4, 9],   [5, 9, 1],   [5, 1, 0],   [5, 0, 11],
+      [1, 9, 8],   [9, 4, 3],   [4, 11, 2],  [11, 0, 10], [0, 1, 7],
+      [3, 8, 9],   [3, 4, 2],   [2, 11, 10], [10, 0, 7],  [7, 1, 8],
+      [3, 2, 6],   [2, 10, 6],  [10, 7, 6],  [7, 8, 6],   [8, 3, 6]
+    ];
 
-      // Внутренняя золотая рамка грани
-      ctx.beginPath();
-      ctx.moveTo(x0, y0 + 18);
-      ctx.lineTo(x1 + 18, y1 - 12);
-      ctx.lineTo(x2 - 18, y2 - 12);
-      ctx.closePath();
-      ctx.strokeStyle = number === 20 ? "#ffe8a3" : "rgba(243, 207, 122, 0.65)";
-      ctx.lineWidth = 8;
-      ctx.stroke();
+    // Распределяем числа 1..20 так, чтобы в центре была 20, а прямо под ней 8 (как на логотипе Настолки!)
+    const FACE_NUMBERS = [
+      20, 8, 14, 2, 12,
+      18, 6, 16, 4, 10,
+      15, 3, 19, 7, 11,
+      1, 17, 5, 13, 9
+    ];
 
-      // Крупная и максимально контрастная цифра в центре тяжести треугольника (256, 298)
-      const cx = 256;
-      const cy = 298;
-      ctx.font = "900 156px 'Montserrat', sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-
-      // Чёрный глубокий контур вокруг цифры, чтобы текст читался под любым углом
-      ctx.lineJoin = "round";
-      ctx.lineWidth = 24;
-      ctx.strokeStyle = "#090214";
-      ctx.strokeText(String(number), cx, cy);
-
-      // Яркая золотисто-белая заливка цифры
-      const textGrad = ctx.createLinearGradient(cx, cy - 75, cx, cy + 75);
-      if (number >= 17) {
-        textGrad.addColorStop(0, "#ffffff");
-        textGrad.addColorStop(0.5, "#fff0b8");
-        textGrad.addColorStop(1, "#f3cf7a");
-      } else {
-        textGrad.addColorStop(0, "#ffffff");
-        textGrad.addColorStop(0.6, "#f8f0ff");
-        textGrad.addColorStop(1, "#ffd97d");
-      }
-      ctx.fillStyle = textGrad;
-      ctx.fillText(String(number), cx, cy);
-
-      // Подчёркивание для 6 и 9, чтобы их никогда не путали
-      if (number === 6 || number === 9) {
-        ctx.beginPath();
-        ctx.moveTo(cx - 42, cy + 86);
-        ctx.lineTo(cx + 42, cy + 86);
-        ctx.lineWidth = 16;
-        ctx.strokeStyle = "#090214";
-        ctx.stroke();
-        ctx.lineWidth = 10;
-        ctx.strokeStyle = "#ffe8a3";
-        ctx.stroke();
-      }
-
-      const texture = new THREE.CanvasTexture(canvas);
-      texture.anisotropy = 4;
-      return texture;
+    // Векторная математика
+    function vecAdd(a, b) { return { x: a.x + b.x, y: a.y + b.y, z: a.z + b.z }; }
+    function vecSub(a, b) { return { x: a.x - b.x, y: a.y - b.y, z: a.z - b.z }; }
+    function vecScale(a, s) { return { x: a.x * s, y: a.y * s, z: a.z * s }; }
+    function vecDot(a, b) { return a.x * b.x + a.y * b.y + a.z * b.z; }
+    function vecCross(a, b) {
+      return {
+        x: a.y * b.z - a.z * b.y,
+        y: a.z * b.x - a.x * b.z,
+        z: a.x * b.y - a.y * b.x
+      };
+    }
+    function vecNorm(a) {
+      const l = Math.hypot(a.x, a.y, a.z) || 1;
+      return { x: a.x / l, y: a.y / l, z: a.z / l };
     }
 
-    function init3DDiceScene() {
-      const container = document.getElementById("diceCanvasContainer");
-      const width = container.clientWidth || 340;
-      const height = container.clientHeight || 300;
+    // Подготавливаем 20 граней и точные кватернионы ориентации для каждого числа 1..20
+    const FACES = [];
+    const TARGET_QUATS = {};
 
-      scene = new THREE.Scene();
-
-      // Перспективная камера смотрит сверху на игровой стол
-      camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
-      camera.position.set(0, 0, 7.6);
-      camera.lookAt(0, 0, 0);
-
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.setSize(width, height);
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-      container.innerHTML = "";
-      container.appendChild(renderer.domElement);
-
-      // Освещение для 3D-граней
-      const ambientLight = new THREE.AmbientLight(0xffffff, 0.88);
-      scene.add(ambientLight);
-
-      const topLight = new THREE.DirectionalLight(0xfff3c4, 0.95);
-      topLight.position.set(3, 5, 7);
-      scene.add(topLight);
-
-      const purpleRimLight = new THREE.PointLight(0xc77dff, 1.1, 15);
-      purpleRimLight.position.set(-4, -3, 4);
-      scene.add(purpleRimLight);
-
-      // Мягкая круглая тень под кубиком на столе
-      const shadowCanvas = document.createElement("canvas");
-      shadowCanvas.width = 128;
-      shadowCanvas.height = 128;
-      const sCtx = shadowCanvas.getContext("2d");
-      const sGrad = sCtx.createRadialGradient(64, 64, 8, 64, 64, 60);
-      sGrad.addColorStop(0, "rgba(0, 0, 0, 0.78)");
-      sGrad.addColorStop(0.6, "rgba(20, 5, 40, 0.4)");
-      sGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
-      sCtx.fillStyle = sGrad;
-      sCtx.fillRect(0, 0, 128, 128);
-
-      const shadowTex = new THREE.CanvasTexture(shadowCanvas);
-      const shadowGeo = new THREE.PlaneGeometry(3.1, 3.1);
-      const shadowMat = new THREE.MeshBasicMaterial({
-        map: shadowTex,
-        transparent: true,
-        depthWrite: false
-      });
-      shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
-      shadowMesh.position.set(0, -0.15, -0.9);
-      scene.add(shadowMesh);
-
-      // Создаём 20-гранник (IcosahedronGeometry)
-      const radius = 1.48;
-      const rawGeo = new THREE.IcosahedronGeometry(radius, 0);
-      const geo = rawGeo.index ? rawGeo.toNonIndexed() : rawGeo;
-
-      const posAttr = geo.attributes.position;
-      const uvs = [];
-
-      // UV-координаты для треугольника на 512x512 текстуре:
-      // вершина V0 -> верх (0.5, 0.93), V1 -> левый низ (0.07, 0.16), V2 -> правый низ (0.93, 0.16)
-      for (let f = 0; f < 20; f++) {
-        uvs.push(0.5, 0.93, 0.07, 0.16, 0.93, 0.16);
+    function matToQuat(m) {
+      // m — массив 3x3 построчно: [m00, m01, m02, m10, m11, m12, m20, m21, m22]
+      const tr = m[0] + m[4] + m[8];
+      let w, x, y, z;
+      if (tr > 0) {
+        const S = Math.sqrt(tr + 1.0) * 2;
+        w = 0.25 * S;
+        x = (m[7] - m[5]) / S;
+        y = (m[2] - m[6]) / S;
+        z = (m[3] - m[1]) / S;
+      } else if ((m[0] > m[4]) && (m[0] > m[8])) {
+        const S = Math.sqrt(1.0 + m[0] - m[4] - m[8]) * 2;
+        w = (m[7] - m[5]) / S;
+        x = 0.25 * S;
+        y = (m[1] + m[3]) / S;
+        z = (m[2] + m[6]) / S;
+      } else if (m[4] > m[8]) {
+        const S = Math.sqrt(1.0 + m[4] - m[0] - m[8]) * 2;
+        w = (m[2] - m[6]) / S;
+        x = (m[1] + m[3]) / S;
+        y = 0.25 * S;
+        z = (m[5] + m[7]) / S;
+      } else {
+        const S = Math.sqrt(1.0 + m[8] - m[0] - m[4]) * 2;
+        w = (m[3] - m[1]) / S;
+        x = (m[2] + m[6]) / S;
+        y = (m[5] + m[7]) / S;
+        z = 0.25 * S;
       }
-      geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+      const len = Math.hypot(w, x, y, z) || 1;
+      return { w: w / len, x: x / len, y: y / len, z: z / len };
+    }
 
-      geo.clearGroups();
-      const materials = [];
+    function quatMultiply(a, b) {
+      return {
+        w: a.w * b.w - a.x * b.x - a.y * b.y - a.z * b.z,
+        x: a.w * b.x + a.x * b.w + a.y * b.z - a.z * b.y,
+        y: a.w * b.y - a.x * b.z + a.y * b.w + a.z * b.x,
+        z: a.w * b.z + a.x * b.y - a.y * b.x + a.z * b.w
+      };
+    }
 
-      for (let f = 0; f < 20; f++) {
-        const faceNumber = f + 1;
-        geo.addGroup(f * 3, 3, f);
+    function quatSlerp(qa, qb, t) {
+      let cosHalfTheta = qa.w * qb.w + qa.x * qb.x + qa.y * qb.y + qa.z * qb.z;
+      let b = { ...qb };
+      if (cosHalfTheta < 0) {
+        b.w = -b.w; b.x = -b.x; b.y = -b.y; b.z = -b.z;
+        cosHalfTheta = -cosHalfTheta;
+      }
+      if (cosHalfTheta >= 1.0) return { ...qa };
+      const halfTheta = Math.acos(cosHalfTheta);
+      const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
+      if (Math.abs(sinHalfTheta) < 0.001) {
+        return {
+          w: qa.w * 0.5 + b.w * 0.5,
+          x: qa.x * 0.5 + b.x * 0.5,
+          y: qa.y * 0.5 + b.y * 0.5,
+          z: qa.z * 0.5 + b.z * 0.5
+        };
+      }
+      const ratioA = Math.sin((1 - t) * halfTheta) / sinHalfTheta;
+      const ratioB = Math.sin(t * halfTheta) / sinHalfTheta;
+      return {
+        w: qa.w * ratioA + b.w * ratioB,
+        x: qa.x * ratioA + b.x * ratioB,
+        y: qa.y * ratioA + b.y * ratioB,
+        z: qa.z * ratioA + b.z * ratioB
+      };
+    }
 
-        const tex = createFaceTexture(faceNumber);
-        materials.push(
-          new THREE.MeshStandardMaterial({
-            map: tex,
-            roughness: 0.28,
-            metalness: 0.18
-          })
+    function quatFromEuler(rx, ry, rz) {
+      const cx = Math.cos(rx * 0.5), sx = Math.sin(rx * 0.5);
+      const cy = Math.cos(ry * 0.5), sy = Math.sin(ry * 0.5);
+      const cz = Math.cos(rz * 0.5), sz = Math.sin(rz * 0.5);
+      return {
+        w: cx * cy * cz + sx * sy * sz,
+        x: sx * cy * cz - cx * sy * sz,
+        y: cx * sy * cz + sx * cy * sz,
+        z: cx * cy * sz - sx * sy * cz
+      };
+    }
+
+    function rotateVecByQuat(v, q) {
+      // v' = v + 2 * cross(q.xyz, cross(q.xyz, v) + q.w * v)
+      const u = { x: q.x, y: q.y, z: q.z };
+      const c1 = vecCross(u, v);
+      const c2 = vecAdd(c1, vecScale(v, q.w));
+      const c3 = vecCross(u, c2);
+      return vecAdd(v, vecScale(c3, 2));
+    }
+
+    function buildIcosahedronData() {
+      for (let i = 0; i < 20; i++) {
+        const tri = RAW_TRIS[i];
+        const num = FACE_NUMBERS[i];
+        let v0 = RAW_VERTS[tri[0]];
+        let v1 = RAW_VERTS[tri[1]];
+        let v2 = RAW_VERTS[tri[2]];
+
+        const center = vecScale(vecAdd(vecAdd(v0, v1), v2), 1 / 3);
+        const uz = vecNorm(center); // Внешняя нормаль грани -> должна смотреть на зрителя (0,0,1)
+
+        // Вектор к вершине v0 вдоль плоскости грани -> должен смотреть вверх (0,1,0)
+        const uy = vecNorm(vecSub(v0, center));
+        const ux = vecNorm(vecCross(uy, uz));
+
+        // Проверяем порядок v1 (левый нижний) и v2 (правый нижний)
+        if (vecDot(vecSub(v1, center), ux) > 0) {
+          const tmp = v1; v1 = v2; v2 = tmp;
+        }
+
+        FACES.push({ num, v0, v1, v2, center, normal: uz });
+
+        // Матрица поворота, которая ставит грань num строго по центру лицом к камере (+Z) и вершиной v0 вверх (+Y)
+        const rotMat = [
+          ux.x, ux.y, ux.z,
+          uy.x, uy.y, uy.z,
+          uz.x, uz.y, uz.z
+        ];
+        TARGET_QUATS[num] = matToQuat(rotMat);
+      }
+    }
+
+    buildIcosahedronData();
+    let activeQuat = { ...TARGET_QUATS[20] };
+
+    function resizeCanvas() {
+      const rect = canvas.parentElement.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = rect.width * dpr;
+      canvas.height = rect.height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    // Отрисовка 3D-кубика D20 со всеми 20 гранями, освещением, тенью и контрастными цифрами
+    function drawD20Scene(time) {
+      const width = canvas.clientWidth || 340;
+      const height = canvas.clientHeight || 310;
+      ctx.clearRect(0, 0, width, height);
+
+      const centerX = width * 0.5 + jumpOffsetX;
+      const baseCenterY = height * 0.47;
+      const centerY = baseCenterY + jumpOffsetY;
+
+      // Лёгкое «дыхание» 3D-кубика в покое, чтобы чувствовался объём
+      let renderQuat = activeQuat;
+      if (!isRolling) {
+        const idleQ = quatFromEuler(
+          Math.sin(time * 0.002) * 0.09,
+          Math.cos(time * 0.0016) * 0.12,
+          Math.sin(time * 0.0013) * 0.03
         );
-
-        // Вычисляем точный кватернион для этой грани, чтобы после броска она смотрела прямо в камеру (+Z) и стояла ровно
-        const v0 = new THREE.Vector3().fromBufferAttribute(posAttr, f * 3 + 0);
-        const v1 = new THREE.Vector3().fromBufferAttribute(posAttr, f * 3 + 1);
-        const v2 = new THREE.Vector3().fromBufferAttribute(posAttr, f * 3 + 2);
-
-        const normalLocal = new THREE.Vector3()
-          .addVectors(v0, v1)
-          .add(v2)
-          .normalize();
-        const midBottom = new THREE.Vector3().addVectors(v1, v2).multiplyScalar(0.5);
-        const upLocal = new THREE.Vector3().subVectors(v0, midBottom).normalize();
-        const rightLocal = new THREE.Vector3().crossVectors(upLocal, normalLocal).normalize();
-        upLocal.crossVectors(normalLocal, rightLocal).normalize();
-
-        // Матрица базиса переводит локальные векторы грани (right, up, normal) в оси экрана (X, Y, Z)
-        const basisMatrix = new THREE.Matrix4().makeBasis(rightLocal, upLocal, normalLocal);
-        basisMatrix.transpose();
-        const targetQuat = new THREE.Quaternion().setFromRotationMatrix(basisMatrix);
-        faceTargetQuaternions[faceNumber] = targetQuat;
+        renderQuat = quatMultiply(idleQ, TARGET_QUATS[currentFaceValue]);
       }
 
-      d20Mesh = new THREE.Mesh(geo, materials);
+      // 1. Рисуем реалистичную тень на столе под кубиком (сжимается при подлёте вверх)
+      const heightFactor = Math.max(0, -jumpOffsetY / 85);
+      const shadowRx = 72 * (1 - heightFactor * 0.38);
+      const shadowRy = 26 * (1 - heightFactor * 0.38);
+      const shadowY = baseCenterY + 86;
 
-      // Золотые 3D-рёбра поверх граней икосаэдра
-      const edgesGeo = new THREE.EdgesGeometry(geo, 1);
-      const edgesMat = new THREE.LineBasicMaterial({
-        color: 0xf3cf7a,
-        transparent: true,
-        opacity: 0.85
-      });
-      const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
-      edgesMesh.scale.setScalar(1.003);
-      d20Mesh.add(edgesMesh);
+      ctx.save();
+      const shGrad = ctx.createRadialGradient(centerX, shadowY, 4, centerX, shadowY, shadowRx);
+      shGrad.addColorStop(0, `rgba(0, 0, 0, ${0.75 - heightFactor * 0.35})`);
+      shGrad.addColorStop(0.55, `rgba(25, 6, 48, ${0.42 - heightFactor * 0.2})`);
+      shGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      ctx.fillStyle = shGrad;
+      ctx.beginPath();
+      ctx.ellipse(centerX, shadowY, shadowRx, shadowRy, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
 
-      // Устанавливаем стартовую грань (20 или сохранённую за сегодня)
-      const initialFace = appState.lastRollValue || 20;
-      if (faceTargetQuaternions[initialFace]) {
-        d20Mesh.quaternion.copy(faceTargetQuaternions[initialFace]);
+      // 2. Проецируем 20 граней в 3D с перспективой
+      const baseRadius = Math.min(width, height) * 0.32 * jumpScaleZ;
+      const camDist = 3.6;
+      const lightDir = vecNorm({ x: -0.35, y: 0.55, z: 0.85 });
+
+      const visibleFaces = [];
+
+      for (let i = 0; i < FACES.length; i++) {
+        const f = FACES[i];
+        const rv0 = rotateVecByQuat(f.v0, renderQuat);
+        const rv1 = rotateVecByQuat(f.v1, renderQuat);
+        const rv2 = rotateVecByQuat(f.v2, renderQuat);
+
+        // Проекция в экранные координаты (ось Y в 3D направлена вверх, на экране вниз)
+        const p0 = projectVertex(rv0, centerX, centerY, baseRadius, camDist);
+        const p1 = projectVertex(rv1, centerX, centerY, baseRadius, camDist);
+        const p2 = projectVertex(rv2, centerX, centerY, baseRadius, camDist);
+
+        // Проверка видимости грани (Backface culling по площади 2D-треугольника)
+        const cross2D = (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
+        if (cross2D <= 0) continue;
+
+        const rNorm = rotateVecByQuat(f.normal, renderQuat);
+        const avgZ = (rv0.z + rv1.z + rv2.z) / 3;
+
+        visibleFaces.push({
+          num: f.num,
+          p0, p1, p2,
+          avgZ,
+          rNorm
+        });
       }
 
-      scene.add(d20Mesh);
+      // Сортируем грани по глубине Z (от дальних к ближним)
+      visibleFaces.sort((a, b) => a.avgZ - b.avgZ);
 
-      window.addEventListener("resize", () => {
-        const w = container.clientWidth;
-        const h = container.clientHeight;
-        if (w && h) {
-          camera.aspect = w / h;
-          camera.updateProjectionMatrix();
-          renderer.setSize(w, h);
+      // 3. Рисуем каждую видимую грань и её 3D-цифру
+      for (const vf of visibleFaces) {
+        const { p0, p1, p2, rNorm, num } = vf;
+
+        // Освещение грани
+        const diffuse = Math.max(0, vecDot(rNorm, lightDir));
+        const frontness = Math.max(0, rNorm.z);
+
+        // Насыщенный фиолетовый цвет грани в стиле логотипа
+        const rCol = Math.round(32 + diffuse * 65 + frontness * 28);
+        const gCol = Math.round(10 + diffuse * 22 + frontness * 8);
+        const bCol = Math.round(62 + diffuse * 105 + frontness * 48);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.moveTo(p0.x, p0.y);
+        ctx.lineTo(p1.x, p1.y);
+        ctx.lineTo(p2.x, p2.y);
+        ctx.closePath();
+
+        ctx.fillStyle = `rgb(${rCol}, ${gCol}, ${bCol})`;
+        ctx.fill();
+
+        // Золотые рёбра икосаэдра
+        ctx.lineJoin = "round";
+        ctx.lineWidth = frontness > 0.75 ? 2.8 : 1.8;
+        ctx.strokeStyle = frontness > 0.75 ? "#ffe89e" : "rgba(245, 208, 118, 0.75)";
+        ctx.stroke();
+
+        // Внутренняя декоративная рамка на грани (как на логотипе)
+        const cx = (p0.x + p1.x + p2.x) / 3;
+        const cy = (p0.y + p1.y + p2.y) / 3;
+        ctx.beginPath();
+        ctx.moveTo(cx + (p0.x - cx) * 0.82, cy + (p0.y - cy) * 0.82);
+        ctx.lineTo(cx + (p1.x - cx) * 0.82, cy + (p1.y - cy) * 0.82);
+        ctx.lineTo(cx + (p2.x - cx) * 0.82, cy + (p2.y - cy) * 0.82);
+        ctx.closePath();
+        ctx.lineWidth = 1.1;
+        ctx.strokeStyle = "rgba(199, 125, 255, 0.45)";
+        ctx.stroke();
+
+        // 4. Перспективная 3D-отрисовка числа (1..20) прямо на плоскости треугольной грани
+        const midBottomX = (p1.x + p2.x) * 0.5;
+        const midBottomY = (p1.y + p2.y) * 0.5;
+
+        // Локальные оси X и Y грани на экране
+        const exX = (p2.x - p1.x) / 110;
+        const exY = (p2.y - p1.y) / 110;
+        const eyX = (midBottomX - p0.x) / 95;
+        const eyY = (midBottomY - p0.y) / 95;
+
+        ctx.transform(exX, exY, eyX, eyY, cx, cy);
+
+        ctx.font = "900 38px 'Montserrat', sans-serif";
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // Плотная тёмная обводка, чтобы число идеально читалось
+        ctx.lineWidth = 7.5;
+        ctx.strokeStyle = "#090214";
+        ctx.strokeText(String(num), 0, 3);
+
+        // Яркая золотисто-белая заливка цифры
+        ctx.fillStyle = num >= 17 ? "#fff5c0" : "#ffffff";
+        ctx.fillText(String(num), 0, 3);
+
+        // Точка-подчёркивание под 6 и 9
+        if (num === 6 || num === 9) {
+          ctx.beginPath();
+          ctx.moveTo(-10, 22);
+          ctx.lineTo(10, 22);
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = "#090214";
+          ctx.stroke();
+          ctx.lineWidth = 2.2;
+          ctx.strokeStyle = "#ffe89e";
+          ctx.stroke();
         }
-      });
 
-      // Цикл плавного рендера
-      function renderLoop(time) {
-        requestAnimationFrame(renderLoop);
-        if (!isRolling && idleRotationEnabled && d20Mesh) {
-          // Лёгкое живое покачивание кубика, чтобы цифры всегда оставались перед глазами
-          const targetFace = appState.lastRollValue || 20;
-          const baseQuat = faceTargetQuaternions[targetFace];
-          if (baseQuat) {
-            const wobble = new THREE.Quaternion().setFromEuler(
-              new THREE.Euler(
-                Math.sin(time * 0.0018) * 0.12,
-                Math.cos(time * 0.0014) * 0.16,
-                Math.sin(time * 0.0011) * 0.05
-              )
-            );
-            d20Mesh.quaternion.copy(baseQuat).multiply(wobble);
-          }
-        }
-        renderer.render(scene, camera);
+        ctx.restore();
       }
-      requestAnimationFrame(renderLoop);
+
+      requestAnimationFrame(drawD20Scene);
     }
 
-    // Волна на столе в точке приземления кубика
-    function spawnBounceRipple(worldX, worldY) {
+    function projectVertex(v, cx, cy, radius, camDist) {
+      const perspective = camDist / (camDist - v.z);
+      return {
+        x: cx + v.x * radius * perspective,
+        y: cy - v.y * radius * perspective
+      };
+    }
+
+    // Анимация 3D-подлёта, вращения и упругих отскоков кубика
+    function animate3DJumpAndBounce(targetValue, onDone) {
+      const startQuat = { ...TARGET_QUATS[currentFaceValue] };
+      const endQuat = { ...TARGET_QUATS[targetValue] };
+
+      const duration = 1350; // 1.35 сек живого прыжка и отскоков
+      const startTime = performance.now();
+
+      // Случайное направление небольшого бокового отклонения при подпрыгивании
+      const dirX = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 12);
+
+      // Полные обороты 3D-вращения в воздухе (кратны 2*PI, чтобы в конце точно встать на грань targetValue)
+      const spinsX = 2 * Math.PI * 2;
+      const spinsY = 2 * Math.PI * 2;
+      const spinsZ = 1 * Math.PI * 2;
+
+      const tBounce1 = 0.48;
+      const tBounce2 = 0.78;
+      const tBounce3 = 0.94;
+      let b1Done = false, b2Done = false, b3Done = false;
+
+      function step(now) {
+        const t = Math.min(1, (now - startTime) / duration);
+
+        // 1. Вертикальные прыжки (подлёт вверх и 2 небольших отскока)
+        if (t < tBounce1) {
+          // Первый подлёт вверх
+          const u = t / tBounce1;
+          jumpOffsetY = -Math.sin(u * Math.PI) * 68;
+          jumpScaleZ = 1 + Math.sin(u * Math.PI) * 0.22;
+          jumpOffsetX = Math.sin(u * Math.PI) * dirX;
+        } else if (t < tBounce2) {
+          // Первый отскок от стола
+          if (!b1Done) {
+            b1Done = true;
+            playBounceSound(1.0);
+            triggerHaptic("heavy");
+            spawnTableRipple();
+          }
+          const u = (t - tBounce1) / (tBounce2 - tBounce1);
+          jumpOffsetY = -Math.sin(u * Math.PI) * 28;
+          jumpScaleZ = 1 + Math.sin(u * Math.PI) * 0.1;
+          jumpOffsetX = -Math.sin(u * Math.PI) * (dirX * 0.45);
+        } else if (t < tBounce3) {
+          // Второй маленький отскок
+          if (!b2Done) {
+            b2Done = true;
+            playBounceSound(0.6);
+            triggerHaptic("light");
+            spawnTableRipple();
+          }
+          const u = (t - tBounce2) / (tBounce3 - tBounce2);
+          jumpOffsetY = -Math.sin(u * Math.PI) * 9;
+          jumpScaleZ = 1 + Math.sin(u * Math.PI) * 0.03;
+          jumpOffsetX = Math.sin(u * Math.PI) * (dirX * 0.15);
+        } else {
+          // Финальная посадка в центр
+          if (!b3Done) {
+            b3Done = true;
+            playBounceSound(0.3);
+          }
+          jumpOffsetY = 0;
+          jumpScaleZ = 1;
+          jumpOffsetX = 0;
+        }
+
+        // 2. Плавное 3D-вращение с торможением точно на выпавшую грань
+        const ease = 1 - Math.pow(1 - t, 3);
+        const baseQ = quatSlerp(startQuat, endQuat, ease);
+        const spinQ = quatFromEuler(
+          spinsX * (1 - ease),
+          spinsY * (1 - ease),
+          spinsZ * (1 - ease)
+        );
+        activeQuat = quatMultiply(spinQ, baseQ);
+
+        if (t < 1) {
+          requestAnimationFrame(step);
+        } else {
+          jumpOffsetY = 0;
+          jumpOffsetX = 0;
+          jumpScaleZ = 1;
+          currentFaceValue = targetValue;
+          activeQuat = { ...endQuat };
+          onDone();
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+
+    function spawnTableRipple() {
       const arena = document.getElementById("diceArena");
       const ripple = document.createElement("div");
       ripple.className = "bounce-ripple";
-      // Переводим мировые координаты стола (-1.5..1.5) в проценты арены
-      const pctX = 50 + (worldX / 2.2) * 38;
-      const pctY = 50 - (worldY / 1.8) * 38;
-      ripple.style.left = `${pctX}%`;
-      ripple.style.top = `${pctY}%`;
       arena.appendChild(ripple);
-      setTimeout(() => ripple.remove(), 500);
-    }
-
-    // Полноценная 3D-анимация броска с подбрасыванием, полётом, отскоками от стола и остановкой на нужной грани
-    function animatePhysics3DRoll(finalValue, onComplete) {
-      const duration = 2100; // 2.1 секунды реалистичного броска и отскоков
-      const startTime = performance.now();
-
-      // Случайная траектория полёта по столу с отскоком от бортика
-      const startX = (Math.random() < 0.5 ? -1 : 1) * (1.1 + Math.random() * 0.4);
-      const startY = -1.2;
-      const bounce1X = -startX * 0.75;
-      const bounce1Y = 0.85;
-      const bounce2X = startX * 0.35;
-      const bounce2Y = -0.35;
-      const bounce3X = -startX * 0.12;
-      const bounce3Y = 0.12;
-
-      // Моменты ударов кубика о стол (в долях времени 0..1)
-      const tHit1 = 0.36;
-      const tHit2 = 0.64;
-      const tHit3 = 0.84;
-      let hit1Triggered = false;
-      let hit2Triggered = false;
-      let hit3Triggered = false;
-
-      // Количество полных оборотов по 3 осям во время полёта
-      const spinX = (4 + Math.floor(Math.random() * 3)) * Math.PI * 2;
-      const spinY = (4 + Math.floor(Math.random() * 3)) * Math.PI * 2;
-      const spinZ = (2 + Math.floor(Math.random() * 2)) * Math.PI * 2;
-
-      const targetQuat = faceTargetQuaternions[finalValue].clone();
-
-      function stepFrame(now) {
-        const elapsed = now - startTime;
-        const t = Math.min(1, elapsed / duration);
-
-        // 1. Вычисляем X, Y перемещение по столу и высоту прыжков Z (параболы с гравитацией)
-        let x = 0, y = 0, zHeight = 0;
-
-        if (t < tHit1) {
-          // Первый высокий бросок в воздух и падение на стол
-          const u = t / tHit1;
-          x = startX + (bounce1X - startX) * u;
-          y = startY + (bounce1Y - startY) * u;
-          zHeight = Math.sin(u * Math.PI) * 2.35;
-        } else if (t < tHit2) {
-          // Первый упругий отскок от стола
-          if (!hit1Triggered) {
-            hit1Triggered = true;
-            playBounceSound(1.0);
-            triggerHaptic("heavy");
-            spawnBounceRipple(bounce1X, bounce1Y);
-          }
-          const u = (t - tHit1) / (tHit2 - tHit1);
-          x = bounce1X + (bounce2X - bounce1X) * u;
-          y = bounce1Y + (bounce2Y - bounce1Y) * u;
-          zHeight = Math.sin(u * Math.PI) * 1.15;
-        } else if (t < tHit3) {
-          // Второй отскок поменьше
-          if (!hit2Triggered) {
-            hit2Triggered = true;
-            playBounceSound(0.65);
-            triggerHaptic("light");
-            spawnBounceRipple(bounce2X, bounce2Y);
-          }
-          const u = (t - tHit2) / (tHit3 - tHit2);
-          x = bounce2X + (bounce3X - bounce2X) * u;
-          y = bounce2Y + (bounce3Y - bounce2Y) * u;
-          zHeight = Math.sin(u * Math.PI) * 0.45;
-        } else {
-          // Третий короткий отскок и фиксация в центре
-          if (!hit3Triggered) {
-            hit3Triggered = true;
-            playBounceSound(0.35);
-            triggerHaptic("light");
-            spawnBounceRipple(bounce3X, bounce3Y);
-          }
-          const u = (t - tHit3) / (1 - tHit3);
-          const easeOut = 1 - Math.pow(1 - u, 3);
-          x = bounce3X * (1 - easeOut);
-          y = bounce3Y * (1 - easeOut);
-          zHeight = Math.sin(u * Math.PI) * 0.12;
-        }
-
-        // Применяем 3D-позицию к кубику (чем выше zHeight, тем ближе кубик к экрану)
-        d20Mesh.position.set(x, y, zHeight);
-
-        // Тень на столе смещается за кубиком и сжимается/размывается, когда кубик высоко в воздухе
-        if (shadowMesh) {
-          shadowMesh.position.set(x + 0.12 * zHeight, y - 0.18 - 0.12 * zHeight, -0.9);
-          const shadowScale = Math.max(0.45, 1.0 - zHeight * 0.18);
-          shadowMesh.scale.set(shadowScale, shadowScale, 1);
-          shadowMesh.material.opacity = Math.max(0.25, 0.85 - zHeight * 0.22);
-        }
-
-        // 2. Вращение в 3D: кубик крутится с затуханием и при t = 1 идеально встаёт на грань finalValue
-        const rem = Math.pow(1 - t, 2.35); // Плавное физическое торможение вращения
-        const spinEuler = new THREE.Euler(
-          spinX * rem,
-          spinY * rem,
-          spinZ * rem,
-          "XYZ"
-        );
-        const spinQuat = new THREE.Quaternion().setFromEuler(spinEuler);
-        d20Mesh.quaternion.copy(targetQuat).multiply(spinQuat);
-
-        if (t < 1) {
-          requestAnimationFrame(stepFrame);
-        } else {
-          d20Mesh.position.set(0, 0, 0);
-          d20Mesh.quaternion.copy(targetQuat);
-          if (shadowMesh) {
-            shadowMesh.position.set(0, -0.15, -0.9);
-            shadowMesh.scale.set(1, 1, 1);
-            shadowMesh.material.opacity = 0.85;
-          }
-          onComplete();
-        }
-      }
-
-      requestAnimationFrame(stepFrame);
+      setTimeout(() => ripple.remove(), 460);
     }
 
     /**************************************************************
-     * 3. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА»
+     * 3. ОБРАБОТКА БРОСКА (БЕЗ ОГРАНИЧЕНИЙ ПО КОЛИЧЕСТВУ РАЗ!)
+     **************************************************************/
+    function handleRollClick() {
+      if (isRolling) return;
+      isRolling = true;
+
+      const rollBtn = document.getElementById("rollBtn");
+      const landedPill = document.getElementById("landedNumberPill");
+      const resultPanel = document.getElementById("resultPanel");
+
+      rollBtn.disabled = true;
+      rollBtn.textContent = "🎲 Кубик в воздухе...";
+      landedPill.textContent = "🔮 Бросок...";
+      resultPanel.classList.remove("show");
+
+      const rolledNumber = getWeightedD20Roll();
+      playBounceSound(0.75);
+      triggerHaptic("light");
+
+      animate3DJumpAndBounce(rolledNumber, () => {
+        finishRoll(rolledNumber);
+      });
+    }
+
+    function generateStylizedPromoCode(prefix) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let rand = "";
+      for (let i = 0; i < 4; i++) {
+        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `NASTOLKA-${prefix}-${rand}`;
+    }
+
+    function finishRoll(value) {
+      const outcome = D20_OUTCOMES[value];
+      const hasDiscount = outcome.discount > 0;
+      const rollBtn = document.getElementById("rollBtn");
+      const landedPill = document.getElementById("landedNumberPill");
+
+      rollBtn.disabled = false;
+      rollBtn.textContent = "🎲 Бросить 3D-кубик ещё раз";
+
+      landedPill.textContent = hasDiscount
+        ? `🎉 Выпало: ${value} (Скидка ${outcome.discount}%!) • Нажми ещё!`
+        : `✨ Выпало число: ${value} • Нажми, чтобы бросить ещё`;
+
+      triggerHaptic("heavy");
+      playFanfare(hasDiscount);
+      spawnBurstParticles(hasDiscount);
+
+      let generatedCode = null;
+      if (hasDiscount) {
+        generatedCode = generateStylizedPromoCode(outcome.prefix);
+        const nowStr = new Date().toLocaleDateString("ru-RU", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        });
+        appState.promos.unshift({
+          id: "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+          code: generatedCode,
+          discount: outcome.discount,
+          rollValue: value,
+          title: outcome.title,
+          date: nowStr
+        });
+        saveState();
+        renderPromos();
+      }
+
+      displayRollResult(value, generatedCode);
+      isRolling = false;
+    }
+
+    function displayRollResult(value, promoCode = null) {
+      const outcome = D20_OUTCOMES[value];
+      const panel = document.getElementById("resultPanel");
+      const badge = document.getElementById("resBadge");
+      const luckPct = document.getElementById("resLuckPercent");
+      const title = document.getElementById("resTitle");
+      const prophecy = document.getElementById("resProphecy");
+      const gameRec = document.getElementById("resGameRec");
+      const lootBox = document.getElementById("lootPromoBox");
+
+      badge.className = `roll-tier-badge ${outcome.tier}`;
+      badge.textContent = `Грань D20: ${value}`;
+      luckPct.textContent = `Уровень удачи: ${value * 5}%`;
+      title.textContent = outcome.title;
+      prophecy.textContent = outcome.prophecy;
+      gameRec.innerHTML = `🎲 <strong>Игра дня для вас в «Настолке»:</strong> ${outcome.game}`;
+
+      if (outcome.discount > 0 && promoCode) {
+        document.getElementById("lootDiscountLabel").textContent =
+          `🎉 Выпала редкая скидка ${outcome.discount}%!`;
+        document.getElementById("lootCodeValue").textContent = promoCode;
+        lootBox.classList.add("show");
+      } else {
+        lootBox.classList.remove("show");
+      }
+
+      panel.classList.add("show");
+    }
+
+    /**************************************************************
+     * 4. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА»
      **************************************************************/
     const CLUB_GAMES = [
       {
@@ -1645,97 +1794,80 @@
     ];
 
     /**************************************************************
-     * 4. СОСТОЯНИЕ И ИНТЕГРАЦИЯ С VK BRIDGE
+     * 5. ХРАНИЛИЩЕ ПРОМОКОДОВ, ЗВУК И НЕБЛОКИРУЮЩИЙ VK BRIDGE
      **************************************************************/
-    const STORAGE_KEY = "nastolka_d20_state_v1";
+    const STORAGE_KEY = "nastolka_d20_state_v2";
     let soundEnabled = true;
     let currentGameCategory = "all";
     let pendingDeletePromoId = null;
 
     let appState = {
-      lastRollDate: null,
-      lastRollValue: null,
       promos: []
     };
-
-    async function initApp() {
-      createBackgroundSparks();
-      loadLocalState();
-
-      if (window.vkBridge) {
-        try {
-          await vkBridge.send("VKWebAppInit");
-          const user = await vkBridge.send("VKWebAppGetUserInfo");
-          if (user && user.first_name) {
-            document.getElementById("greetingTitle").textContent =
-              `${user.first_name}, испытай удачу кубов!`;
-          }
-          const vkData = await vkBridge.send("VKWebAppStorageGet", { keys: [STORAGE_KEY] });
-          if (vkData && vkData.keys && vkData.keys[0] && vkData.keys[0].value) {
-            const parsed = JSON.parse(vkData.keys[0].value);
-            if (parsed && typeof parsed === "object") {
-              appState = parsed;
-              saveLocalStateOnly();
-            }
-          }
-        } catch (err) {
-          console.log("Автономный режим браузера");
-        }
-      }
-
-      init3DDiceScene();
-      updateDailyUI();
-      renderPromos();
-      renderGames();
-      startCooldownTicker();
-    }
-
-    function getTodayString() {
-      const now = new Date();
-      const y = now.getFullYear();
-      const m = String(now.getMonth() + 1).padStart(2, "0");
-      const d = String(now.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
-    }
 
     function loadLocalState() {
       try {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (raw) {
-          appState = JSON.parse(raw);
+          const parsed = JSON.parse(raw);
+          if (parsed && Array.isArray(parsed.promos)) {
+            appState.promos = parsed.promos;
+          }
         }
       } catch (e) {}
     }
 
-    function saveLocalStateOnly() {
+    function saveState() {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
       } catch (e) {}
-    }
-
-    async function saveState() {
-      saveLocalStateOnly();
       if (window.vkBridge) {
         try {
-          await vkBridge.send("VKWebAppStorageSet", {
+          vkBridge.send("VKWebAppStorageSet", {
             key: STORAGE_KEY,
             value: JSON.stringify(appState)
-          });
+          }).catch(() => {});
         } catch (e) {}
       }
     }
 
+    function initVKNonBlocking() {
+      if (!window.vkBridge) return;
+      try {
+        vkBridge.send("VKWebAppInit").catch(() => {});
+        vkBridge.send("VKWebAppGetUserInfo")
+          .then(user => {
+            if (user && user.first_name) {
+              document.getElementById("greetingTitle").textContent =
+                `${user.first_name}, испытай удачу кубов!`;
+            }
+          })
+          .catch(() => {});
+        vkBridge.send("VKWebAppStorageGet", { keys: [STORAGE_KEY] })
+          .then(vkData => {
+            if (vkData && vkData.keys && vkData.keys[0] && vkData.keys[0].value) {
+              const parsed = JSON.parse(vkData.keys[0].value);
+              if (parsed && Array.isArray(parsed.promos)) {
+                appState.promos = parsed.promos;
+                renderPromos();
+              }
+            }
+          })
+          .catch(() => {});
+      } catch (e) {}
+    }
+
     function triggerHaptic(type = "light") {
       if (window.vkBridge) {
-        vkBridge.send("VKWebAppTapticImpactOccurred", { style: type }).catch(() => {});
+        try {
+          vkBridge.send("VKWebAppTapticImpactOccurred", { style: type }).catch(() => {});
+        } catch (e) {}
       } else if (navigator.vibrate) {
-        navigator.vibrate(type === "heavy" ? 45 : 18);
+        navigator.vibrate(type === "heavy" ? 40 : 15);
       }
     }
 
-    /**************************************************************
-     * 5. РЕАЛИСТИЧНЫЙ ЗВУК ОТСКОКОВ КУБИКА И ФАНФАР (Web Audio API)
-     **************************************************************/
+    // Звуковой движок (Web Audio API)
     let audioCtx = null;
     function getAudioCtx() {
       if (!audioCtx) {
@@ -1748,42 +1880,41 @@
       return audioCtx;
     }
 
-    // Звук удара кости о деревянный/суконный стол
     function playBounceSound(intensity = 1.0) {
       if (!soundEnabled) return;
-      const ctx = getAudioCtx();
-      if (!ctx) return;
+      const aCtx = getAudioCtx();
+      if (!aCtx) return;
 
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
+      const osc = aCtx.createOscillator();
+      const gain = aCtx.createGain();
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(190 + intensity * 90, ctx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(55, ctx.currentTime + 0.085);
+      osc.frequency.setValueAtTime(180 + intensity * 95, aCtx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(55, aCtx.currentTime + 0.085);
 
-      gain.gain.setValueAtTime(0.22 * intensity, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+      gain.gain.setValueAtTime(0.22 * intensity, aCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, aCtx.currentTime + 0.09);
 
       osc.connect(gain);
-      gain.connect(ctx.destination);
+      gain.connect(aCtx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.09);
+      osc.stop(aCtx.currentTime + 0.09);
     }
 
     function playFanfare(isDiscount) {
       if (!soundEnabled) return;
-      const ctx = getAudioCtx();
-      if (!ctx) return;
+      const aCtx = getAudioCtx();
+      if (!aCtx) return;
       const notes = isDiscount ? [440, 554.37, 659.25, 880] : [330, 440, 523.25];
       notes.forEach((freq, idx) => {
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
+        const osc = aCtx.createOscillator();
+        const gain = aCtx.createGain();
         osc.type = isDiscount ? "sawtooth" : "triangle";
-        const startTime = ctx.currentTime + idx * 0.09;
+        const startTime = aCtx.currentTime + idx * 0.09;
         osc.frequency.setValueAtTime(freq, startTime);
         gain.gain.setValueAtTime(0.11, startTime);
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
         osc.connect(gain);
-        gain.connect(ctx.destination);
+        gain.connect(aCtx.destination);
         osc.start(startTime);
         osc.stop(startTime + 0.35);
       });
@@ -1795,168 +1926,7 @@
     });
 
     /**************************************************************
-     * 6. ЗАПУСК 3D-БРОСКА И ВЫДАЧА СКИДКИ
-     **************************************************************/
-    function canRollToday() {
-      return appState.lastRollDate !== getTodayString();
-    }
-
-    function generateStylizedPromoCode(prefix) {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let rand = "";
-      for (let i = 0; i < 4; i++) {
-        rand += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return `NASTOLKA-${prefix}-${rand}`;
-    }
-
-    function handleRollClick() {
-      if (isRolling) return;
-      if (!canRollToday()) {
-        showToast("Кубик уже брошен сегодня! Приходите завтра 🎲");
-        triggerHaptic("light");
-        return;
-      }
-
-      isRolling = true;
-      const rollBtn = document.getElementById("rollBtn");
-      const resultPanel = document.getElementById("resultPanel");
-      const landedPill = document.getElementById("landedNumberPill");
-
-      rollBtn.disabled = true;
-      rollBtn.textContent = "🎲 Кубик летит по столу...";
-      landedPill.textContent = "🔮 Бросок в процессе...";
-      resultPanel.classList.remove("show");
-
-      const finalValue = getWeightedD20Roll();
-      playBounceSound(0.75);
-      triggerHaptic("light");
-
-      animatePhysics3DRoll(finalValue, () => {
-        finishRoll(finalValue);
-      });
-    }
-
-    function finishRoll(value) {
-      const outcome = D20_OUTCOMES[value];
-      const hasDiscount = outcome.discount > 0;
-      const landedPill = document.getElementById("landedNumberPill");
-
-      landedPill.textContent = hasDiscount
-        ? `🎉 Выпало: ${value} (Скидка ${outcome.discount}%!)`
-        : `✨ Выпала грань: ${value} из 20`;
-
-      triggerHaptic("heavy");
-      playFanfare(hasDiscount);
-      spawnBurstParticles(hasDiscount);
-
-      appState.lastRollDate = getTodayString();
-      appState.lastRollValue = value;
-
-      let generatedCode = null;
-      if (hasDiscount) {
-        generatedCode = generateStylizedPromoCode(outcome.prefix);
-        const nowStr = new Date().toLocaleDateString("ru-RU", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric"
-        });
-        appState.promos.unshift({
-          id: "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
-          code: generatedCode,
-          discount: outcome.discount,
-          rollValue: value,
-          title: outcome.title,
-          date: nowStr
-        });
-      }
-
-      saveState();
-      displayRollResult(value, generatedCode);
-      updateDailyUI();
-      renderPromos();
-      isRolling = false;
-    }
-
-    function displayRollResult(value, promoCode = null) {
-      const outcome = D20_OUTCOMES[value];
-      const panel = document.getElementById("resultPanel");
-      const badge = document.getElementById("resBadge");
-      const luckPct = document.getElementById("resLuckPercent");
-      const title = document.getElementById("resTitle");
-      const prophecy = document.getElementById("resProphecy");
-      const gameRec = document.getElementById("resGameRec");
-      const lootBox = document.getElementById("lootPromoBox");
-
-      badge.className = `roll-tier-badge ${outcome.tier}`;
-      badge.textContent = `Грань D20: ${value}`;
-      luckPct.textContent = `Уровень удачи: ${value * 5}%`;
-      title.textContent = outcome.title;
-      prophecy.textContent = outcome.prophecy;
-      gameRec.innerHTML = `🎲 <strong>Игра дня для вас в «Настолке»:</strong> ${outcome.game}`;
-
-      if (outcome.discount > 0) {
-        const codeToShow =
-          promoCode ||
-          (appState.promos[0] ? appState.promos[0].code : "NASTOLKA-PROMO");
-        document.getElementById("lootDiscountLabel").textContent =
-          `🎉 Выпала редкая скидка ${outcome.discount}%!`;
-        document.getElementById("lootCodeValue").textContent = codeToShow;
-        lootBox.classList.add("show");
-      } else {
-        lootBox.classList.remove("show");
-      }
-
-      panel.classList.add("show");
-    }
-
-    function updateDailyUI() {
-      const rollBtn = document.getElementById("rollBtn");
-      const cooldownBox = document.getElementById("cooldownBox");
-      const landedPill = document.getElementById("landedNumberPill");
-
-      if (!canRollToday()) {
-        rollBtn.disabled = true;
-        rollBtn.textContent = "✅ Бросок на сегодня сделан";
-        cooldownBox.classList.add("visible");
-        if (appState.lastRollValue) {
-          const val = appState.lastRollValue;
-          const out = D20_OUTCOMES[val];
-          landedPill.textContent = out && out.discount > 0
-            ? `🎉 Сегодня выпало: ${val} (Скидка ${out.discount}%)`
-            : `✨ Сегодня выпала грань: ${val} из 20`;
-          if (d20Mesh && faceTargetQuaternions[val]) {
-            d20Mesh.quaternion.copy(faceTargetQuaternions[val]);
-          }
-          displayRollResult(val);
-        }
-      } else {
-        rollBtn.disabled = false;
-        rollBtn.textContent = "🎲 Бросить 3D-кубик D20";
-        cooldownBox.classList.remove("visible");
-        landedPill.textContent = "Нажмите на стол или кнопку, чтобы бросить D20";
-      }
-    }
-
-    function startCooldownTicker() {
-      const timerSpan = document.getElementById("cooldownTimer");
-      setInterval(() => {
-        if (canRollToday()) {
-          updateDailyUI();
-          return;
-        }
-        const now = new Date();
-        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
-        const diff = Math.max(0, tomorrow - now);
-        const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
-        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
-        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
-        timerSpan.textContent = `${h}:${m}:${s}`;
-      }, 1000);
-    }
-
-    /**************************************************************
-     * 7. ИНВЕНТАРЬ ПРОМОКОДОВ И УДАЛЕНИЕ АДМИНИСТРАТОРОМ
+     * 6. ИНВЕНТАРЬ ПРОМОКОДОВ И КАТАЛОГ ИГР
      **************************************************************/
     function renderPromos() {
       const list = document.getElementById("promoList");
@@ -1974,7 +1944,7 @@
         list.innerHTML = `
           <div class="empty-state">
             У вас пока нет сохранённых промокодов.<br><br>
-            Бросайте кубик D20 каждый день — на гранях <strong>17, 18, 19 и 20</strong> прячутся скидки от 5% до 20%!
+            Бросайте 3D-кубик D20 — на гранях <strong>17, 18, 19 и 20</strong> выпадают скидки от 5% до 20%!
           </div>
         `;
         return;
@@ -2030,9 +2000,6 @@
       showToast("Промокод успешно погашен и удалён!");
     });
 
-    /**************************************************************
-     * 8. КАТАЛОГ ИГР И ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
-     **************************************************************/
     function setGameCategory(cat, btn) {
       currentGameCategory = cat;
       document.querySelectorAll("#categoryChips .chip").forEach((c) => c.classList.remove("active"));
@@ -2079,26 +2046,27 @@
 
       document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
       btnEl.classList.add("active");
+
+      if (tabName === "dice") {
+        setTimeout(resizeCanvas, 20);
+      }
       triggerHaptic("light");
     }
 
-    /**************************************************************
-     * 9. ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
-     **************************************************************/
     function spawnBurstParticles(isGold) {
       const arena = document.getElementById("diceArena");
-      for (let i = 0; i < 26; i++) {
+      for (let i = 0; i < 24; i++) {
         const p = document.createElement("div");
         p.className = "burst-particle";
         p.style.left = "50%";
-        p.style.top = "50%";
+        p.style.top = "47%";
         p.style.background = isGold
           ? i % 2 === 0 ? "#ffe8a3" : "#9d4edd"
           : i % 2 === 0 ? "#c77dff" : "#00e5ff";
         arena.appendChild(p);
 
-        const angle = (Math.PI * 2 * i) / 26;
-        const dist = 75 + Math.random() * 65;
+        const angle = (Math.PI * 2 * i) / 24;
+        const dist = 70 + Math.random() * 60;
         const tx = Math.cos(angle) * dist;
         const ty = Math.sin(angle) * dist;
 
@@ -2107,7 +2075,7 @@
             { transform: "translate(-50%, -50%) scale(1.3)", opacity: 1 },
             { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`, opacity: 0 }
           ],
-          { duration: 680 + Math.random() * 260, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
+          { duration: 650 + Math.random() * 250, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
         ).onfinish = () => p.remove();
       }
     }
@@ -2120,7 +2088,7 @@
         spark.style.left = Math.random() * 100 + "vw";
         spark.style.animationDuration = 7 + Math.random() * 10 + "s";
         spark.style.animationDelay = Math.random() * 5 + "s";
-        spark.style.background = i % 2 === 0 ? "#f3cf7a" : "#c77dff";
+        spark.style.background = i % 2 === 0 ? "#f5d076" : "#c77dff";
         container.appendChild(spark);
       }
     }
@@ -2132,7 +2100,17 @@
       setTimeout(() => t.classList.remove("show"), 2400);
     }
 
-    window.addEventListener("DOMContentLoaded", initApp);
+    // Мгновенный запуск при открытии страницы
+    window.addEventListener("DOMContentLoaded", () => {
+      createBackgroundSparks();
+      loadLocalState();
+      resizeCanvas();
+      window.addEventListener("resize", resizeCanvas);
+      requestAnimationFrame(drawD20Scene);
+      renderPromos();
+      renderGames();
+      initVKNonBlocking();
+    });
   </script>
 </body>
-  </html>
+</html>
