@@ -4,11 +4,45 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Игровой клуб «Настолка» — Кубик Судьбы D20</title>
-  <!-- Официальный SDK VK Bridge (не блокирует работу вне ВК) -->
-  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js" async></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Мгновенная инициализация VK Mini Apps (чтобы приложение сразу открывалось без бесконечной загрузки) -->
+  <script>
+    (function instantVKInit() {
+      try {
+        var initPayload = JSON.stringify({
+          type: "VKWebAppInit",
+          handler: "VKWebAppInit",
+          params: { request_id: 1 },
+           vital: true
+        });
+        if (window.ReactNativeWebView && window.ReactNativeWebView.postMessage) {
+          window.ReactNativeWebView.postMessage(initPayload);
+        }
+        if (window.AndroidBridge && window.AndroidBridge.VKWebAppInit) {
+          window.AndroidBridge.VKWebAppInit("{}");
+        }
+        if (window.webkit && window.webkit.messageHandlers && window.webkit.messageHandlers.VKWebAppInit) {
+          window.webkit.messageHandlers.VKWebAppInit.postMessage({});
+        }
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({
+            handler: "VKWebAppInit",
+            params: {},
+            type: "vk-connect",
+            webFrameId: "",
+            connectVersion: "2.0.0"
+          }, "*");
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <!-- Надёжный CDN VK Bridge с автоматическим вызовом при загрузке -->
+  <script src="[https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@2.15.1/dist/browser.min.js](https://cdn.jsdelivr.net/npm/@vkontakte/vk-bridge@2.15.1/dist/browser.min.js)" onload="window.__onVKBridgeLoaded && window.__onVKBridgeLoaded()"></script>
+
+  <link rel="preconnect" href="[https://fonts.googleapis.com](https://fonts.googleapis.com)">
+  <link rel="preconnect" href="[https://fonts.gstatic.com](https://fonts.gstatic.com)" crossorigin>
+  <link href="[https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap](https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800;900&display=swap)" rel="stylesheet">
   <style>
     :root {
       --bg-deep: #080510;
@@ -34,6 +68,11 @@
       user-select: none;
     }
 
+    input, textarea {
+      user-select: text;
+      -webkit-user-select: text;
+    }
+
     body {
       background-color: var(--bg-deep);
       background-image:
@@ -41,7 +80,7 @@
         radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
         radial-gradient(circle at 15% 75%, rgba(245, 208, 118, 0.1) 0%, transparent 40%);
       color: var(--text-main);
-      font-family: 'Montserrat', sans-serif;
+      font-family: 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       min-height: 100vh;
       overflow-x: hidden;
       padding-top: calc(12px + var(--safe-top));
@@ -80,7 +119,7 @@
       padding: 0 14px;
     }
 
-    /* ШАПКА КЛУБА С ЯРКОЙ НАДПИСЬЮ «НАСТОЛКА» */
+    /* ШАПКА КЛУБА */
     .club-header {
       display: flex;
       align-items: center;
@@ -120,7 +159,6 @@
     }
 
     .brand-title {
-      font-family: 'Montserrat', sans-serif;
       font-size: 1.55rem;
       font-weight: 900;
       letter-spacing: 2px;
@@ -280,7 +318,6 @@
       justify-content: center;
     }
 
-    /* Декоративный магический круг на столе */
     .arena-ring {
       position: absolute;
       width: 236px;
@@ -297,7 +334,6 @@
       border: 1px solid rgba(199, 125, 255, 0.22);
     }
 
-    /* Волна на столе при отскоке кубика */
     .bounce-ripple {
       position: absolute;
       left: 50%;
@@ -327,7 +363,6 @@
       display: block;
     }
 
-    /* Плашка статуса внизу стола */
     .landed-number-pill {
       position: absolute;
       bottom: 10px;
@@ -347,7 +382,6 @@
       white-space: nowrap;
     }
 
-    /* Частицы салюта */
     .burst-particle {
       position: absolute;
       width: 8px;
@@ -357,7 +391,6 @@
       z-index: 6;
     }
 
-    /* Кнопка броска */
     .roll-btn {
       width: 100%;
       max-width: 320px;
@@ -366,7 +399,7 @@
       border: 2px solid var(--gold-bright);
       background: linear-gradient(135deg, #9d4edd 0%, #5a189a 55%, #3c096c 100%);
       color: #ffffff;
-      font-family: 'Montserrat', sans-serif;
+      font-family: inherit;
       font-size: 1.02rem;
       font-weight: 900;
       text-transform: uppercase;
@@ -387,7 +420,6 @@
       cursor: not-allowed;
     }
 
-    /* Таймер обратного отсчёта до следующего дня */
     .cooldown-box {
       margin-top: 12px;
       font-size: 0.82rem;
@@ -406,7 +438,6 @@
       display: block;
     }
 
-    /* Карточка результата */
     .result-panel {
       margin-top: 18px;
       background: linear-gradient(160deg, rgba(38, 27, 72, 0.96), rgba(18, 13, 36, 0.99));
@@ -472,7 +503,6 @@
       color: var(--gold-main);
     }
 
-    /* Блок выпавшего промокода */
     .loot-promo-box {
       margin-top: 14px;
       background: linear-gradient(135deg, rgba(245, 208, 118, 0.22), rgba(157, 78, 221, 0.3));
@@ -600,7 +630,7 @@
       width: 100%;
       padding: 12px 14px;
       border-radius: 12px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: inherit;
       font-size: 0.78rem;
       font-weight: 800;
       cursor: pointer;
@@ -654,17 +684,46 @@
       line-height: 1.4;
     }
 
+    .search-wrap {
+      position: relative;
+      margin-bottom: 10px;
+    }
+
     .search-input {
       width: 100%;
-      padding: 12px 14px;
+      padding: 12px 38px 12px 14px;
       border-radius: 12px;
       background: rgba(0, 0, 0, 0.45);
-      border: 1px solid rgba(199, 125, 255, 0.4);
+      border: 1.5px solid rgba(199, 125, 255, 0.45);
       color: var(--text-main);
-      font-family: 'Montserrat', sans-serif;
+      font-family: inherit;
       font-size: 0.85rem;
-      margin-bottom: 10px;
       outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .search-input:focus {
+      border-color: var(--gold-main);
+    }
+
+    .search-clear {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      border: none;
+      background: rgba(255, 255, 255, 0.12);
+      color: var(--text-main);
+      font-size: 0.8rem;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .search-clear.visible {
+      display: flex;
     }
 
     .filter-chips {
@@ -687,6 +746,7 @@
       border: 1px solid rgba(255, 255, 255, 0.14);
       color: var(--text-muted);
       cursor: pointer;
+      font-family: inherit;
     }
     .chip.active {
       background: var(--purple-neon);
@@ -698,7 +758,7 @@
       display: grid;
       grid-template-columns: 1fr;
       gap: 8px;
-      max-height: 420px;
+      max-height: 440px;
       overflow-y: auto;
       padding-right: 4px;
     }
@@ -730,6 +790,7 @@
       background: rgba(157, 78, 221, 0.22);
       color: #e0aaff;
       white-space: nowrap;
+      flex-shrink: 0;
     }
 
     /* Нижняя навигация */
@@ -761,7 +822,7 @@
       gap: 4px;
       padding: 6px 4px;
       border-radius: 12px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: inherit;
       font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
@@ -850,7 +911,7 @@
       flex: 1;
       padding: 12px;
       border-radius: 12px;
-      font-family: 'Montserrat', sans-serif;
+      font-family: inherit;
       font-weight: 700;
       font-size: 0.8rem;
       cursor: pointer;
@@ -914,7 +975,7 @@
             <span class="t-rpg">РОЛЕВЫЕ</span> •
             <span class="t-vr">ВИРТУАЛЬНЫЕ</span>
           </div>
-          <a href="https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am" target="_blank" rel="noopener noreferrer" class="brand-address">
+          <a href="[https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am](https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am)" target="_blank" rel="noopener noreferrer" class="brand-address">
             📍 Шипиловский проезд 49/1
           </a>
         </div>
@@ -980,7 +1041,7 @@
           <span>🎒 Ваши промокоды</span>
         </div>
         <p class="section-desc">
-          Покажите сохранённый промокод на стойке администратора в клубе <strong>«Настолка»</strong> (<a href="https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловский проезд 49/1</a>). При получении скидки нажмите кнопку «Применить промокод на стойке администратора».
+          Покажите сохранённый промокод на стойке администратора в клубе <strong>«Настолка»</strong> (<a href="[https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am](https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am)" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловский проезд 49/1</a>). При получении скидки нажмите кнопку «Применить промокод на стойке администратора».
         </p>
 
         <div class="promo-list" id="promoList"></div>
@@ -992,7 +1053,7 @@
       <div class="section-card">
         <div class="section-heading">🏰 Игровой клуб «Настолка»</div>
         <p class="section-desc">
-          Уютное пространство на <a href="https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловском проезде 49/1</a>, где настольные игры оживают, а каждая сессия превращается в приключение! Приходите с друзьями или знакомьтесь с новыми людьми — наша команда всегда поможет с выбором игры и правил.
+          Уютное пространство на <a href="[https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am](https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am)" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловском проезде 49/1</a>, где настольные игры оживают, а каждая сессия превращается в приключение! Приходите с друзьями или знакомьтесь с новыми людьми — наша команда всегда поможет с выбором игры и правил.
         </p>
 
         <div class="club-features">
@@ -1034,9 +1095,12 @@
         </div>
 
         <div class="section-heading" style="margin-top: 10px;">📚 Каталог игр клуба</div>
-        <p class="section-desc" style="margin-bottom: 10px;">Список постоянно пополняется:</p>
+        <p class="section-desc" style="margin-bottom: 10px;">Введите любые буквы из названия или жанра игры:</p>
 
-        <input type="text" class="search-input" id="gameSearch" placeholder="🔍 Найти игру (например: Бункер, Дюна, Имаджинариум)..." oninput="renderGames()" />
+        <div class="search-wrap">
+          <input type="text" class="search-input" id="gameSearch" placeholder="🔍 Поиск по буквам (например: бун, алиас, днд, страт)..." oninput="onSearchInput()" />
+          <button type="button" class="search-clear" id="searchClearBtn" onclick="clearSearch()" title="Очистить">✕</button>
+        </div>
 
         <div class="filter-chips" id="categoryChips">
           <button class="chip active" onclick="setGameCategory('all', this)">Все игры</button>
@@ -1088,7 +1152,7 @@
 
   <script>
     /**************************************************************
-     * 1. БАЗА ПРОРОЧЕСТВ D20 И СКИДКИ (17–20) — ТОЛЬКО 1 ИГРА ДНЯ
+     * 1. БАЗА ПРОРОЧЕСТВ D20 И СКИДКИ (17–20) — РОВНО 1 ИГРА ДНЯ
      **************************************************************/
     const D20_OUTCOMES = {
       1: {
@@ -1166,7 +1230,7 @@
         tier: "tier-high",
         discount: 0,
         prophecy: "Вы понимаете тиммейтов с полуслова и одного взгляда. В командных играх ваш дуэт сегодня просто непобедим!",
-        game: "CodeNames (Кодовые имена)"
+        game: "CodeNames"
       },
       12: {
         title: "12 — Боевой азарт",
@@ -1209,7 +1273,7 @@
         discount: 5,
         prefix: "BARD5",
         prophecy: "Струны судьбы сыграли победный аккорд! Ваша удача настолько высока, что материализовалась в приятную скидку 5% на посещение клуба «Настолка».",
-        game: "Alias (Алиас)"
+        game: "Alias"
       },
       18: {
         title: "18 — Сокровище Стража (+Скидка 10%)",
@@ -1237,20 +1301,17 @@
       }
     };
 
-    /**
-     * СЛОЖНЫЙ ШАНС НА СКИДКУ: ровно 1 к 20 (5% суммарно на все скидочные грани 17..20)
-     */
     function getWeightedD20Roll() {
       const r = Math.random() * 100;
-      if (r < 0.5) return 20;            // 0.5% — скидка 20%
-      if (r < 1.5) return 19;            // 1.0% — скидка 15%
-      if (r < 3.0) return 18;            // 1.5% — скидка 10%
-      if (r < 5.0) return 17;            // 2.0% — скидка 5%
+      if (r < 0.5) return 20;
+      if (r < 1.5) return 19;
+      if (r < 3.0) return 18;
+      if (r < 5.0) return 17;
       return Math.floor(Math.random() * 16) + 1;
     }
 
     /**************************************************************
-     * 2. 3D-ДВИЖОК D20 С ТОЧНЫМ СОВПАДЕНИЕМ И РОВНЫМИ ЦИФРАМИ
+     * 2. 3D-ДВИЖОК D20 С АВТОПОДСТРОЙКОЙ РАЗМЕРА ХОЛСТА
      **************************************************************/
     const canvas = document.getElementById("d20Canvas");
     const ctx = canvas.getContext("2d");
@@ -1348,12 +1409,12 @@
 
     function quatSlerp(qa, qb, t) {
       let cosHalfTheta = qa.w * qb.w + qa.x * qb.x + qa.y * qb.y + qa.z * qb.z;
-      let b = { ...qb };
+      let b = { w: qb.w, x: qb.x, y: qb.y, z: qb.z };
       if (cosHalfTheta < 0) {
         b.w = -b.w; b.x = -b.x; b.y = -b.y; b.z = -b.z;
         cosHalfTheta = -cosHalfTheta;
       }
-      if (cosHalfTheta >= 1.0) return { ...qa };
+      if (cosHalfTheta >= 1.0) return { w: qa.w, x: qa.x, y: qa.y, z: qa.z };
       const halfTheta = Math.acos(cosHalfTheta);
       const sinHalfTheta = Math.sqrt(1.0 - cosHalfTheta * cosHalfTheta);
       if (Math.abs(sinHalfTheta) < 0.001) {
@@ -1423,14 +1484,25 @@
     }
 
     buildIcosahedronData();
-    let activeQuat = { ...TARGET_QUATS[20] };
+    let activeQuat = {
+      w: TARGET_QUATS[20].w,
+      x: TARGET_QUATS[20].x,
+      y: TARGET_QUATS[20].y,
+      z: TARGET_QUATS[20].z
+    };
 
     function resizeCanvas() {
-      const rect = canvas.parentElement.getBoundingClientRect();
+      const parent = canvas.parentElement;
+      if (!parent) return;
+      const rect = parent.getBoundingClientRect();
+      const w = rect.width || 340;
+      const h = rect.height || 310;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = rect.width * dpr;
-      canvas.height = rect.height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      if (canvas.width !== Math.round(w * dpr) || canvas.height !== Math.round(h * dpr)) {
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
     }
 
     function projectVertex(v, cx, cy, radius, camDist) {
@@ -1442,8 +1514,12 @@
     }
 
     function drawD20Scene(time) {
-      const width = canvas.clientWidth || 340;
-      const height = canvas.clientHeight || 310;
+      if (!canvas.width || !canvas.height) {
+        resizeCanvas();
+      }
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = (canvas.width / dpr) || 340;
+      const height = (canvas.height / dpr) || 310;
       ctx.clearRect(0, 0, width, height);
 
       const centerX = width * 0.5 + jumpOffsetX;
@@ -1461,14 +1537,14 @@
       }
 
       const heightFactor = Math.max(0, -jumpOffsetY / 85);
-      const shadowRx = 72 * (1 - heightFactor * 0.38);
-      const shadowRy = 26 * (1 - heightFactor * 0.38);
+      const shadowRx = Math.max(5, 72 * (1 - heightFactor * 0.38));
+      const shadowRy = Math.max(3, 26 * (1 - heightFactor * 0.38));
       const shadowY = baseCenterY + 88;
 
       ctx.save();
-      const shGrad = ctx.createRadialGradient(centerX, shadowY, 4, centerX, shadowY, shadowRx);
-      shGrad.addColorStop(0, `rgba(0, 0, 0, ${0.76 - heightFactor * 0.35})`);
-      shGrad.addColorStop(0.55, `rgba(25, 6, 48, ${0.42 - heightFactor * 0.2})`);
+      const shGrad = ctx.createRadialGradient(centerX, shadowY, 2, centerX, shadowY, shadowRx);
+      shGrad.addColorStop(0, "rgba(0, 0, 0, " + Math.max(0.1, (0.76 - heightFactor * 0.35)).toFixed(2) + ")");
+      shGrad.addColorStop(0.55, "rgba(25, 6, 48, " + Math.max(0.05, (0.42 - heightFactor * 0.2)).toFixed(2) + ")");
       shGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
       ctx.fillStyle = shGrad;
       ctx.beginPath();
@@ -1500,16 +1576,17 @@
 
         visibleFaces.push({
           num: f.num,
-          p0, p1, p2,
-          avgZ,
-          rNorm
+          p0: p0, p1: p1, p2: p2,
+          avgZ: avgZ,
+          rNorm: rNorm
         });
       }
 
       visibleFaces.sort((a, b) => a.avgZ - b.avgZ);
 
-      for (const vf of visibleFaces) {
-        const { p0, p1, p2, rNorm, num } = vf;
+      for (let idx = 0; idx < visibleFaces.length; idx++) {
+        const vf = visibleFaces[idx];
+        const p0 = vf.p0, p1 = vf.p1, p2 = vf.p2, rNorm = vf.rNorm, num = vf.num;
 
         const diffuse = Math.max(0, vecDot(rNorm, lightDir));
         const frontness = Math.max(0, rNorm.z);
@@ -1525,7 +1602,7 @@
         ctx.lineTo(p2.x, p2.y);
         ctx.closePath();
 
-        ctx.fillStyle = `rgb(${rCol}, ${gCol}, ${bCol})`;
+        ctx.fillStyle = "rgb(" + rCol + ", " + gCol + ", " + bCol + ")";
         ctx.fill();
 
         ctx.lineJoin = "round";
@@ -1584,8 +1661,8 @@
     }
 
     function animate3DJumpAndBounce(targetValue, onDone) {
-      const startQuat = { ...TARGET_QUATS[currentFaceValue] };
-      const endQuat = { ...TARGET_QUATS[targetValue] };
+      const startQuat = TARGET_QUATS[currentFaceValue];
+      const endQuat = TARGET_QUATS[targetValue];
 
       const duration = 1400;
       const startTime = performance.now();
@@ -1656,7 +1733,7 @@
           jumpOffsetX = 0;
           jumpScaleZ = 1;
           currentFaceValue = targetValue;
-          activeQuat = { ...endQuat };
+          activeQuat = { w: endQuat.w, x: endQuat.x, y: endQuat.y, z: endQuat.z };
           onDone();
         }
       }
@@ -1673,14 +1750,14 @@
     }
 
     /**************************************************************
-     * 3. СИСТЕМА БРОСКА «1 РАЗ В ДЕНЬ» И ТАЙМЕР ОБРАТНОГО ОТСЧЁТА
+     * 3. СИСТЕМА БРОСКА «1 РАЗ В ДЕНЬ» И ТАЙМЕР
      **************************************************************/
     function getTodayString() {
       const now = new Date();
       const y = now.getFullYear();
       const m = String(now.getMonth() + 1).padStart(2, "0");
       const d = String(now.getDate()).padStart(2, "0");
-      return `${y}-${m}-${d}`;
+      return y + "-" + m + "-" + d;
     }
 
     function canRollToday() {
@@ -1711,7 +1788,7 @@
       playBounceSound(0.75);
       triggerHaptic("light");
 
-      animate3DJumpAndBounce(rolledNumber, () => {
+      animate3DJumpAndBounce(rolledNumber, function () {
         finishRoll(rolledNumber);
       });
     }
@@ -1722,7 +1799,7 @@
       for (let i = 0; i < 4; i++) {
         rand += chars.charAt(Math.floor(Math.random() * chars.length));
       }
-      return `NASTOLKA-${prefix}-${rand}`;
+      return "NASTOLKA-" + prefix + "-" + rand;
     }
 
     function finishRoll(value) {
@@ -1761,7 +1838,7 @@
       isRolling = false;
     }
 
-    function displayRollResult(value, promoCode = null) {
+    function displayRollResult(value, promoCode) {
       const outcome = D20_OUTCOMES[value];
       if (!outcome) return;
 
@@ -1773,19 +1850,19 @@
       const gameRec = document.getElementById("resGameRec");
       const lootBox = document.getElementById("lootPromoBox");
 
-      badge.className = `roll-tier-badge ${outcome.tier}`;
-      badge.textContent = `Грань D20: ${value}`;
-      luckPct.textContent = `Уровень удачи: ${value * 5}%`;
+      badge.className = "roll-tier-badge " + outcome.tier;
+      badge.textContent = "Грань D20: " + value;
+      luckPct.textContent = "Уровень удачи: " + (value * 5) + "%";
       title.textContent = outcome.title;
       prophecy.textContent = outcome.prophecy;
-      gameRec.innerHTML = `🎲 <strong>Игра дня для вас в «Настолке»:</strong> ${outcome.game}`;
+      gameRec.innerHTML = "🎲 <strong>Игра дня для вас в «Настолке»:</strong> " + outcome.game;
 
       if (outcome.discount > 0) {
         const codeToShow =
           promoCode ||
           (appState.promos[0] ? appState.promos[0].code : "NASTOLKA-PROMO");
         document.getElementById("lootDiscountLabel").textContent =
-          `🎉 Выпала редкая скидка ${outcome.discount}%!`;
+          "🎉 Выпала редкая скидка " + outcome.discount + "%!";
         document.getElementById("lootCodeValue").textContent = codeToShow;
         lootBox.classList.add("show");
       } else {
@@ -1804,15 +1881,20 @@
         const val = Number(appState.lastRollValue);
         const out = D20_OUTCOMES[val];
         currentFaceValue = val;
-        activeQuat = { ...TARGET_QUATS[val] };
+        activeQuat = {
+          w: TARGET_QUATS[val].w,
+          x: TARGET_QUATS[val].x,
+          y: TARGET_QUATS[val].y,
+          z: TARGET_QUATS[val].z
+        };
 
         rollBtn.disabled = true;
         rollBtn.textContent = "✅ Бросок на сегодня сделан";
         cooldownBox.classList.add("visible");
 
         landedPill.textContent = out && out.discount > 0
-          ? `🎉 Выпало: ${val} (Скидка ${out.discount}%!)`
-          : `✨ Выпало число: ${val} из 20`;
+          ? "🎉 Выпало: " + val + " (Скидка " + out.discount + "%!)"
+          : "✨ Выпало число: " + val + " из 20";
 
         displayRollResult(val);
         updateCooldownText();
@@ -1820,7 +1902,7 @@
         rollBtn.disabled = false;
         rollBtn.textContent = "🎲 Бросить 3D-кубик D20";
         cooldownBox.classList.remove("visible");
-        landedPill.textContent = `Грань D20: ${currentFaceValue} • Нажми на кубик!`;
+        landedPill.textContent = "Грань D20: " + currentFaceValue + " • Нажми на кубик!";
       }
     }
 
@@ -1832,11 +1914,11 @@
       const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
       const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
       const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
-      timerSpan.textContent = `${h}:${m}:${s}`;
+      timerSpan.textContent = h + ":" + m + ":" + s;
     }
 
     function startCooldownTicker() {
-      setInterval(() => {
+      setInterval(function () {
         if (canRollToday()) {
           const cooldownBox = document.getElementById("cooldownBox");
           if (cooldownBox.classList.contains("visible")) {
@@ -1849,7 +1931,7 @@
     }
 
     /**************************************************************
-     * 4. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА» (КАТЕГОРИИ + ЖАНРЫ)
+     * 4. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА» И УМНЫЙ ПОИСК ПО БУКВАМ
      **************************************************************/
     const CLUB_GAMES = [
       // Игры с ведущим (host)
@@ -1857,25 +1939,29 @@
         name: "Мафия с масками",
         sub: "Атмосферные стилизованные сессии с ведущим и полным погружением",
         cat: "host",
-        tag: "Психология / Детектив"
+        tag: "Психология / Детектив",
+        keywords: "мафия ведущий маски городская классическая mafia"
       },
       {
         name: "Бункер / Бункер – Б / Бункер: первое убежище",
         sub: "Дискуссионный хит на выживание после апокалипсиса",
         cat: "host",
-        tag: "Дискуссия / Выживание"
+        tag: "Дискуссия / Выживание",
+        keywords: "бункер убежище апокалипсис катастрофа выживание bunker"
       },
       {
         name: "Dungeons & Dragons (D&D)",
         sub: "Ролевые кампании и ваншоты с Мастером Подземелий",
         cat: "host",
-        tag: "Ролевая (НРИ)"
+        tag: "Ролевая (НРИ)",
+        keywords: "днд д&д dnd d&d подземелья и драконы ролевка нри ваншот мастер"
       },
       {
         name: "Сюжетные испытания с ведущим",
         sub: "Интерактивные ролевые сценарии для новичков и опытных игроков",
         cat: "host",
-        tag: "Сюжет / Ролевая"
+        tag: "Сюжет / Ролевая",
+        keywords: "сюжетные испытания квест ролевая ведущий"
       },
 
       // Настольные игры (board)
@@ -1883,157 +1969,183 @@
         name: "Серия «ИМАДЖИНАРИУМ» (19 выпусков)",
         sub: "Для друзей, Страшилки, Кино, Семиречье, Детство, Кассиопея, Ариадна, Персефона, Прайм-тайм, Гармония, Химера 18+, Сай-фай, Союзмультфильм, Одиссея, Пандора, Юбилейный и др.",
         cat: "board",
-        tag: "Ассоциации"
+        tag: "Ассоциации",
+        keywords: "имаджинариум диксит ассоциации картинки imaginarium"
       },
       {
         name: "Ticket to Ride: Европа",
         sub: "Строительство железнодорожных маршрутов по всей Европе",
         cat: "board",
-        tag: "Стратегия"
+        tag: "Стратегия",
+        keywords: "тикет ту райд билет на поезд поезда железная дорога европа ticket to ride"
       },
       {
         name: "Сумерки Империи",
         sub: "Масштабная галактическая стратегия: дипломатия, торговля и флот",
         cat: "board",
-        tag: "Стратегия"
+        tag: "Стратегия",
+        keywords: "сумерки империи космос галактика twilight imperium"
       },
       {
         name: "Дюна: Завоевание и дипломатия",
         sub: "Эпическая битва великих домов за Арракис и пряность",
         cat: "board",
-        tag: "Стратегия"
+        tag: "Стратегия",
+        keywords: "дюна арракис спайс пряность dune"
       },
       {
         name: "CATAN + CATAN: Мореходы",
         sub: "Мировая классика колонизации, торговли и строительства",
         cat: "board",
-        tag: "Стратегия"
+        tag: "Стратегия",
+        keywords: "катан колонизаторы мореходы торговля catan"
       },
       {
         name: "Каркассон",
         sub: "Уютное средневековое градостроительство с выкладыванием тайлов",
         cat: "board",
-        tag: "Стратегия"
+        tag: "Стратегия",
+        keywords: "каркассон каркасон тайлы средневековье carcassonne"
       },
       {
         name: "Цитадели: делюкс",
         sub: "Градостроительство с тайными ролями и интригами",
         cat: "board",
-        tag: "Стратегия"
+        tag: "Стратегия",
+        keywords: "цитадели делюкс роли интриги citadels"
       },
       {
         name: "CodeNames (Оригинал, Картинки, Дуэт, 18+)",
         sub: "Культовый командный пати-гейм для шпионов и капитанов разведки",
         cat: "board",
-        tag: "Детектив / Вечеринка"
+        tag: "Детектив / Вечеринка",
+        keywords: "коднеймс кодовые имена шпионы слова пати codenames"
       },
       {
         name: "Alias (Оригинал, Вечеринка, Дамы против Джентльменов)",
         sub: "Объясняйте слова на время самыми невероятными способами",
         cat: "board",
-        tag: "Вечеринка"
+        tag: "Вечеринка",
+        keywords: "алиас элиас скажи иначе слова на время пати alias"
       },
       {
         name: "Нуар и Письма призрака",
         sub: "Атмосферные расследования, улики и чистая дедукция",
         cat: "board",
-        tag: "Детектив"
+        tag: "Детектив",
+        keywords: "нуар письма призрака расследование улики дедукция noir"
       },
       {
         name: "SpyFall и SpyFall 2",
         sub: "Вычислите шпиона по косвенным вопросам, не выдав локацию",
         cat: "board",
-        tag: "Детектив"
+        tag: "Детектив",
+        keywords: "спайфол спайфолл находка для шпиона шпион локация spyfall"
       },
       {
         name: "Нечто: Из глубокой бездны",
         sub: "Напряжённый триллер со скрытым предателем на полярной станции",
         cat: "board",
-        tag: "Детектив / Выживание"
+        tag: "Детектив / Выживание",
+        keywords: "нечто бездна предатель хоррор выживание"
       },
       {
         name: "Unmatched: Красная Шапочка и Беовульф",
         sub: "Асимметричный тактический поединок легендарных героев",
         cat: "board",
-        tag: "Тактика / Дуэль"
+        tag: "Тактика / Дуэль",
+        keywords: "анматчед анматчд дуэль бой красная шапочка беовульф unmatched"
       },
       {
         name: "Замес (База, Ктулху, Монстры, Русы против ящеров)",
         sub: "Комбинируйте две уникальные фракции и захватывайте базы",
         cat: "board",
-        tag: "Стратегия / Экшен"
+        tag: "Стратегия / Экшен",
+        keywords: "замес ктулху монстры русы против ящеров smash up"
       },
       {
         name: "Подземелье (6 игр серии)",
         sub: "Приключенческая серия с квестами, монстрами и лутом",
         cat: "board",
-        tag: "Приключения"
+        tag: "Приключения",
+        keywords: "подземелье квесты приключения"
       },
       {
         name: "Манчкин",
         sub: "Вышибайте двери, сражайтесь с монстрами и подставляйте друзей",
         cat: "board",
-        tag: "Приключения / Юмор"
+        tag: "Приключения / Юмор",
+        keywords: "манчкин монстры сокровища munchkin"
       },
       {
         name: "Мачи Коро и Мачи Коро Шарп",
         sub: "Постройте процветающий японский мегаполис на бросках кубов",
         cat: "board",
-        tag: "Экономика"
+        tag: "Экономика",
+        keywords: "мачи коро шарп город кубики экономика machi koro"
       },
       {
         name: "Взрывные котята / 18+ / Зомби-котята",
         sub: "Быстрая и азартная карточная рулетка",
         cat: "board",
-        tag: "Вечеринка"
+        tag: "Вечеринка",
+        keywords: "взрывные котята зомби коты рулетка exploding kittens"
       },
       {
         name: "Страдающее средневековье",
         sub: "Ироничная карточная игра с мемами и чёрным юмором",
         cat: "board",
-        tag: "Вечеринка / Юмор"
+        tag: "Вечеринка / Юмор",
+        keywords: "страдающее средневековье мемы юмор"
       },
       {
         name: "Эпичные схватки боевых магов 18+ (2 части)",
         sub: "Безумные комбинации заклинаний и тотальный магический хаос",
         cat: "board",
-        tag: "Экшен / 18+"
+        tag: "Экшен / 18+",
+        keywords: "эпичные схватки боевых магов колдуны заклинания 18+"
       },
       {
         name: "Таверна «Красный Дракон» 18+ (4 части)",
         sub: "Весёлые посиделки приключенцев после похода в подземелье",
         cat: "board",
-        tag: "Вечеринка / Фэнтези"
+        tag: "Вечеринка / Фэнтези",
+        keywords: "таверна красный дракон крд 18+ фэнтези"
       },
       {
         name: "Соображарий (База, Герои, Супер, Игры, Картинки, Вечеринка)",
         sub: "Скоростная битва эрудиции и реакции на каждую букву",
         cat: "board",
-        tag: "Вечеринка"
+        tag: "Вечеринка",
+        keywords: "соображарий слова реакция буквы викторина"
       },
       {
         name: "Гарри Поттер и Рик и Морти",
         sub: "Тематические настольные игры по культовым вселенным",
         cat: "board",
-        tag: "Приключения"
+        tag: "Приключения",
+        keywords: "гарри поттер хогвартс рик и морти harry potter rick morty"
       },
       {
         name: "Монополия, Клудомания, Городской убийца",
         sub: "Проверенные временем настольные хиты для компании",
         cat: "board",
-        tag: "Экономика / Детектив"
+        tag: "Экономика / Детектив",
+        keywords: "монополия клуэдо клудомания городской убийца детектив экономика monopoly cluedo"
       },
       {
         name: "Да, тёмный властелин! / Правда и действие",
         sub: "Игры на импровизацию, отыгрыш и весёлые задания",
         cat: "board",
-        tag: "Вечеринка"
+        tag: "Вечеринка",
+        keywords: "да темный властелин правда или действие фанты вечеринка"
       },
       {
         name: "Уно, Совпадение, Падающая башня, Я бананчик, Индейцы, Три на три, Запретный остров",
         sub: "Динамичные настолки для любого возраста и настроения",
         cat: "board",
-        tag: "Быстрые / Кооператив"
+        tag: "Быстрые / Кооператив",
+        keywords: "уно uno дженга падающая башня бананчик индейцы запретный остров"
       },
 
       // PS5 (ps5)
@@ -2041,25 +2153,29 @@
         name: "Mortal Kombat 1 / Mortal Kombat 11 Ultimate",
         sub: "Зрелищные поединки на большом экране для двоих и турниров",
         cat: "ps5",
-        tag: "Файтинг"
+        tag: "Файтинг",
+        keywords: "мортал комбат мк мк1 мк11 файтинг драки пс5 ps5 плойка mortal kombat"
       },
       {
         name: "EA Sports FC (FIFA) / UFC 5",
         sub: "Главные спортивные симуляторы для дружеских матчей на PS5",
         cat: "ps5",
-        tag: "Спортсим"
+        tag: "Спортсим",
+        keywords: "фифа футбол юфс бои спорт пс5 ps5 плойка fifa ufc fc"
       },
       {
         name: "It Takes Two / A Way Out",
         sub: "Лучшие сюжетные игры для совместного прохождения вдвоём",
         cat: "ps5",
-        tag: "Кооператив"
+        tag: "Кооператив",
+        keywords: "ит тейкс ту э вей аут на двоих кооператив пс5 ps5 it takes two a way out"
       },
       {
         name: "Человек-Паук 2 / God of War Ragnarök / Одни из нас",
         sub: "Одиночные блокбастеры с кинематографичной графикой",
         cat: "ps5",
-        tag: "Экшен / Приключения"
+        tag: "Экшен / Приключения",
+        keywords: "человек паук спайдермен год оф вар кратос рагнарек одни из нас ласт оф ас пс5 ps5 spider man god of war"
       },
 
       // VR (vr)
@@ -2067,29 +2183,190 @@
         name: "Beat Saber",
         sub: "Легендарная VR-игра: рубите неоновые кубы световыми мечами под музыку",
         cat: "vr",
-        tag: "Ритм / Аркада"
+        tag: "Ритм / Аркада",
+        keywords: "бит сейбер сабер мечи музыка ритм вр виар vr beat saber"
       },
       {
         name: "Half-Life: Alyx и сюжетные VR-миры",
         sub: "Глубокое погружение в фантастические миры с полной интерактивностью",
         cat: "vr",
-        tag: "Шутер / Приключения"
+        tag: "Шутер / Приключения",
+        keywords: "халф лайф аликс шутер вр виар шлем vr half life alyx"
       },
       {
         name: "VR-экшены, квесты и симуляторы",
         sub: "Стрельба из лука, побег из комнат, американские горки и командные бои",
         cat: "vr",
-        tag: "Экшен / Симулятор"
+        tag: "Экшен / Симулятор",
+        keywords: "вр виар шлем очки виртуальная реальность квесты стрельба симулятор vr"
       }
     ];
 
+    // Нормализация строки для поиска (приведение к нижнему регистру, замена ё->е, удаление спецсимволов)
+    function normalizeText(str) {
+      return (str || "")
+        .toLowerCase()
+        .replace(/ё/g, "е")
+        .replace(/[^a-zа-я0-9\s]/g, " ")
+        .replace(/\s+/g, " ")
+        .trim();
+    }
+
+    // Проверка совпадения букв по порядку (subsequence): например, "бнкр" найдёт "бункер", "имж" -> "имаджинариум"
+    function isSubsequence(shortStr, longStr) {
+      if (shortStr.length < 2) return false;
+      let i = 0;
+      let j = 0;
+      while (i < shortStr.length && j < longStr.length) {
+        if (shortStr[i] === longStr[j]) {
+          i++;
+        }
+        j++;
+      }
+      return i === shortStr.length;
+    }
+
+    // Оценка совпадения игры с введёнными буквами (чем выше балл, тем выше игра в списке)
+    function scoreGameMatch(game, rawQuery) {
+      const q = normalizeText(rawQuery);
+      if (!q) return 1;
+
+      const nameNorm = normalizeText(game.name);
+      const subNorm = normalizeText(game.sub);
+      const tagNorm = normalizeText(game.tag);
+      const kwNorm = normalizeText(game.keywords || "");
+      const fullText = nameNorm + " " + tagNorm + " " + kwNorm + " " + subNorm;
+      const words = fullText.split(" ");
+
+      const queryTokens = q.split(" ").filter(Boolean);
+      let totalScore = 0;
+
+      for (let t = 0; t < queryTokens.length; t++) {
+        const token = queryTokens[t];
+        let tokenScore = 0;
+
+        // 1. Прямое вхождение букв в название игры
+        if (nameNorm.indexOf(token) !== -1) {
+          tokenScore = nameNorm.indexOf(token) === 0 ? 120 : 100;
+        }
+        // 2. Прямое вхождение букв в жанр или ключевые слова (включая русские названия англ. игр)
+        else if (tagNorm.indexOf(token) !== -1 || kwNorm.indexOf(token) !== -1) {
+          tokenScore = 80;
+        }
+        // 3. Прямое вхождение букв в описание
+        else if (subNorm.indexOf(token) !== -1) {
+          tokenScore = 60;
+        }
+        // 4. Совпадение букв по порядку внутри любого слова названия или ключевых слов (например "мнкн" -> "манчкин")
+        else if (token.length >= 2) {
+          for (let w = 0; w < words.length; w++) {
+            if (words[w].length >= token.length && isSubsequence(token, words[w])) {
+              tokenScore = 35;
+              break;
+            }
+          }
+        }
+
+        if (tokenScore === 0) {
+          return 0; // Если хотя бы одно введённое слово совсем не совпало
+        }
+        totalScore += tokenScore;
+      }
+
+      return totalScore;
+    }
+
+    function onSearchInput() {
+      const input = document.getElementById("gameSearch");
+      const clearBtn = document.getElementById("searchClearBtn");
+      if (input.value.trim().length > 0) {
+        clearBtn.classList.add("visible");
+      } else {
+        clearBtn.classList.remove("visible");
+      }
+      renderGames();
+    }
+
+    function clearSearch() {
+      const input = document.getElementById("gameSearch");
+      const clearBtn = document.getElementById("searchClearBtn");
+      input.value = "";
+      clearBtn.classList.remove("visible");
+      renderGames();
+      input.focus();
+    }
+
+    function setGameCategory(cat, btn) {
+      currentGameCategory = cat;
+      document.querySelectorAll("#categoryChips .chip").forEach(function (c) {
+        c.classList.remove("active");
+      });
+      btn.classList.add("active");
+      renderGames();
+    }
+
+    function renderGames() {
+      const rawQuery = document.getElementById("gameSearch").value.trim();
+      const grid = document.getElementById("gamesGrid");
+
+      // Сначала ищем в выбранной категории
+      let scored = [];
+      for (let i = 0; i < CLUB_GAMES.length; i++) {
+        const g = CLUB_GAMES[i];
+        const matchesCat = currentGameCategory === "all" || g.cat === currentGameCategory;
+        if (!matchesCat) continue;
+        const score = scoreGameMatch(g, rawQuery);
+        if (score > 0) {
+          scored.push({ game: g, score: score });
+        }
+      }
+
+      // Если пользователь ввёл буквы в поиск, но в текущей вкладке ничего нет — ищем по всем категориям
+      if (rawQuery.length > 0 && scored.length === 0 && currentGameCategory !== "all") {
+        for (let i = 0; i < CLUB_GAMES.length; i++) {
+          const g = CLUB_GAMES[i];
+          const score = scoreGameMatch(g, rawQuery);
+          if (score > 0) {
+            scored.push({ game: g, score: score });
+          }
+        }
+      }
+
+      if (rawQuery.length > 0) {
+        scored.sort(function (a, b) {
+          return b.score - a.score;
+        });
+      }
+
+      if (scored.length === 0) {
+        grid.innerHTML = '<div class="empty-state">Игры по вашему запросу не найдены. Попробуйте ввести 2–3 буквы названия или спросите у наших ведущих в клубе!</div>';
+        return;
+      }
+
+      grid.innerHTML = scored
+        .map(function (item) {
+          const g = item.game;
+          return (
+            '<div class="game-card">' +
+              '<div>' +
+                '<div class="game-name">' + g.name + '</div>' +
+                '<div class="game-sub">' + g.sub + '</div>' +
+              '</div>' +
+              '<span class="game-tag">' + g.tag + '</span>' +
+            '</div>'
+          );
+        })
+        .join("");
+    }
+
     /**************************************************************
-     * 5. ХРАНИЛИЩЕ ДАННЫХ, ЗВУК И НЕБЛОКИРУЮЩИЙ VK BRIDGE
+     * 5. ХРАНИЛИЩЕ ДАННЫХ, ЗВУК И VK BRIDGE
      **************************************************************/
     const STORAGE_KEY = "nastolka_d20_state_v3";
     let soundEnabled = true;
     let currentGameCategory = "all";
     let pendingDeletePromoId = null;
+    let vkInitialized = false;
 
     let appState = {
       lastRollDate: null,
@@ -2120,25 +2397,26 @@
           vkBridge.send("VKWebAppStorageSet", {
             key: STORAGE_KEY,
             value: JSON.stringify(appState)
-          }).catch(() => {});
+          }).catch(function () {});
         } catch (e) {}
       }
     }
 
     function initVKNonBlocking() {
-      if (!window.vkBridge) return;
+      if (!window.vkBridge || vkInitialized) return;
+      vkInitialized = true;
       try {
-        vkBridge.send("VKWebAppInit").catch(() => {});
+        vkBridge.send("VKWebAppInit").catch(function () {});
         vkBridge.send("VKWebAppGetUserInfo")
-          .then(user => {
+          .then(function (user) {
             if (user && user.first_name) {
               document.getElementById("greetingTitle").textContent =
-                `${user.first_name}, испытай удачу кубов!`;
+                user.first_name + ", испытай удачу кубов!";
             }
           })
-          .catch(() => {});
+          .catch(function () {});
         vkBridge.send("VKWebAppStorageGet", { keys: [STORAGE_KEY] })
-          .then(vkData => {
+          .then(function (vkData) {
             if (vkData && vkData.keys && vkData.keys[0] && vkData.keys[0].value) {
               const parsed = JSON.parse(vkData.keys[0].value);
               if (parsed && typeof parsed === "object") {
@@ -2153,17 +2431,23 @@
               }
             }
           })
-          .catch(() => {});
+          .catch(function () {});
       } catch (e) {}
     }
 
-    function triggerHaptic(type = "light") {
+    // Если VK Bridge догрузился чуть позже DOMContentLoaded — сразу вызываем инициализацию
+    window.__onVKBridgeLoaded = function () {
+      initVKNonBlocking();
+    };
+
+    function triggerHaptic(type) {
+      const style = type || "light";
       if (window.vkBridge) {
         try {
-          vkBridge.send("VKWebAppTapticImpactOccurred", { style: type }).catch(() => {});
+          vkBridge.send("VKWebAppTapticImpactOccurred", { style: style }).catch(function () {});
         } catch (e) {}
       } else if (navigator.vibrate) {
-        navigator.vibrate(type === "heavy" ? 40 : 15);
+        navigator.vibrate(style === "heavy" ? 40 : 15);
       }
     }
 
@@ -2179,7 +2463,8 @@
       return audioCtx;
     }
 
-    function playBounceSound(intensity = 1.0) {
+    function playBounceSound(intensity) {
+      const power = intensity || 1.0;
       if (!soundEnabled) return;
       const aCtx = getAudioCtx();
       if (!aCtx) return;
@@ -2187,10 +2472,10 @@
       const osc = aCtx.createOscillator();
       const gain = aCtx.createGain();
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(180 + intensity * 95, aCtx.currentTime);
+      osc.frequency.setValueAtTime(180 + power * 95, aCtx.currentTime);
       osc.frequency.exponentialRampToValueAtTime(55, aCtx.currentTime + 0.085);
 
-      gain.gain.setValueAtTime(0.22 * intensity, aCtx.currentTime);
+      gain.gain.setValueAtTime(0.22 * power, aCtx.currentTime);
       gain.gain.exponentialRampToValueAtTime(0.001, aCtx.currentTime + 0.09);
 
       osc.connect(gain);
@@ -2204,7 +2489,7 @@
       const aCtx = getAudioCtx();
       if (!aCtx) return;
       const notes = isDiscount ? [440, 554.37, 659.25, 880] : [330, 440, 523.25];
-      notes.forEach((freq, idx) => {
+      notes.forEach(function (freq, idx) {
         const osc = aCtx.createOscillator();
         const gain = aCtx.createGain();
         osc.type = isDiscount ? "sawtooth" : "triangle";
@@ -2219,13 +2504,13 @@
       });
     }
 
-    document.getElementById("soundToggle").addEventListener("click", () => {
+    document.getElementById("soundToggle").addEventListener("click", function () {
       soundEnabled = !soundEnabled;
       document.getElementById("soundToggle").textContent = soundEnabled ? "🔊" : "🔇";
     });
 
     /**************************************************************
-     * 6. ИНВЕНТАРЬ ПРОМОКОДОВ И КАТАЛОГ ИГР
+     * 6. ИНВЕНТАРЬ ПРОМОКОДОВ И ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
      **************************************************************/
     function renderPromos() {
       const list = document.getElementById("promoList");
@@ -2240,31 +2525,30 @@
       }
 
       if (count === 0) {
-        list.innerHTML = `
-          <div class="empty-state">
-            У вас пока нет сохранённых промокодов.<br><br>
-            Бросайте 3D-кубик D20 каждый день — на гранях <strong>17, 18, 19 и 20</strong> выпадают редкие скидки от 5% до 20%!
-          </div>
-        `;
+        list.innerHTML =
+          '<div class="empty-state">' +
+            'У вас пока нет сохранённых промокодов.<br><br>' +
+            'Бросайте 3D-кубик D20 каждый день — на гранях <strong>17, 18, 19 и 20</strong> выпадают редкие скидки от 5% до 20%!' +
+          '</div>';
         return;
       }
 
       list.innerHTML = appState.promos
-        .map(
-          (item) => `
-        <div class="promo-item">
-          <div class="promo-top">
-            <span class="promo-discount-badge">СКИДКА ${item.discount}% (Грань ${item.rollValue})</span>
-            <span class="promo-date">Выбит: ${item.date}</span>
-          </div>
-          <div class="promo-code-display">${item.code}</div>
-          <div class="promo-prophecy-mini">${item.title}</div>
-          <div class="promo-actions">
-            <button class="btn-redeem" onclick="openRedeemModal('${item.id}', '${item.code}')">✨ Применить промокод на стойке администратора</button>
-          </div>
-        </div>
-      `
-        )
+        .map(function (item) {
+          return (
+            '<div class="promo-item">' +
+              '<div class="promo-top">' +
+                '<span class="promo-discount-badge">СКИДКА ' + item.discount + '% (Грань ' + item.rollValue + ')</span>' +
+                '<span class="promo-date">Выбит: ' + item.date + '</span>' +
+              '</div>' +
+              '<div class="promo-code-display">' + item.code + '</div>' +
+              '<div class="promo-prophecy-mini">' + item.title + '</div>' +
+              '<div class="promo-actions">' +
+                '<button class="btn-redeem" onclick="openRedeemModal(\'' + item.id + '\', \'' + item.code + '\')">✨ Применить промокод на стойке администратора</button>' +
+              '</div>' +
+            '</div>'
+          );
+        })
         .join("");
     }
 
@@ -2280,9 +2564,11 @@
       document.getElementById("redeemModal").classList.remove("open");
     }
 
-    document.getElementById("confirmRedeemBtn").addEventListener("click", () => {
+    document.getElementById("confirmRedeemBtn").addEventListener("click", function () {
       if (!pendingDeletePromoId) return;
-      appState.promos = appState.promos.filter((p) => p.id !== pendingDeletePromoId);
+      appState.promos = appState.promos.filter(function (p) {
+        return p.id !== pendingDeletePromoId;
+      });
       saveState();
       renderPromos();
       closeRedeemModal();
@@ -2290,52 +2576,15 @@
       showToast("Промокод успешно применён!");
     });
 
-    function setGameCategory(cat, btn) {
-      currentGameCategory = cat;
-      document.querySelectorAll("#categoryChips .chip").forEach((c) => c.classList.remove("active"));
-      btn.classList.add("active");
-      renderGames();
-    }
-
-    function renderGames() {
-      const query = document.getElementById("gameSearch").value.trim().toLowerCase();
-      const grid = document.getElementById("gamesGrid");
-
-      const filtered = CLUB_GAMES.filter((g) => {
-        const matchesCat = currentGameCategory === "all" || g.cat === currentGameCategory;
-        const matchesText =
-          !query ||
-          g.name.toLowerCase().includes(query) ||
-          g.sub.toLowerCase().includes(query) ||
-          g.tag.toLowerCase().includes(query);
-        return matchesCat && matchesText;
-      });
-
-      if (filtered.length === 0) {
-        grid.innerHTML = `<div class="empty-state">Игры по вашему запросу не найдены. Спросите у наших ведущих в клубе — каталог постоянно пополняется!</div>`;
-        return;
-      }
-
-      grid.innerHTML = filtered
-        .map(
-          (g) => `
-        <div class="game-card">
-          <div>
-            <div class="game-name">${g.name}</div>
-            <div class="game-sub">${g.sub}</div>
-          </div>
-          <span class="game-tag">${g.tag}</span>
-        </div>
-      `
-        )
-        .join("");
-    }
-
     function switchTab(tabName, btnEl) {
-      document.querySelectorAll(".tab-section").forEach((s) => s.classList.remove("active"));
+      document.querySelectorAll(".tab-section").forEach(function (s) {
+        s.classList.remove("active");
+      });
       document.getElementById("tab-" + tabName).classList.add("active");
 
-      document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
+      document.querySelectorAll(".nav-btn").forEach(function (b) {
+        b.classList.remove("active");
+      });
       btnEl.classList.add("active");
 
       if (tabName === "dice") {
@@ -2352,8 +2601,8 @@
         p.style.left = "50%";
         p.style.top = "46%";
         p.style.background = isGold
-          ? i % 2 === 0 ? "#ffe8a3" : "#9d4edd"
-          : i % 2 === 0 ? "#c77dff" : "#00e5ff";
+          ? (i % 2 === 0 ? "#ffe8a3" : "#9d4edd")
+          : (i % 2 === 0 ? "#c77dff" : "#00e5ff");
         arena.appendChild(p);
 
         const angle = (Math.PI * 2 * i) / 24;
@@ -2361,13 +2610,19 @@
         const tx = Math.cos(angle) * dist;
         const ty = Math.sin(angle) * dist;
 
-        p.animate(
-          [
-            { transform: "translate(-50%, -50%) scale(1.3)", opacity: 1 },
-            { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`, opacity: 0 }
-          ],
-          { duration: 650 + Math.random() * 250, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
-        ).onfinish = () => p.remove();
+        if (p.animate) {
+          p.animate(
+            [
+              { transform: "translate(-50%, -50%) scale(1.3)", opacity: 1 },
+              { transform: "translate(calc(-50% + " + tx + "px), calc(-50% + " + ty + "px)) scale(0)", opacity: 0 }
+            ],
+            { duration: 650 + Math.random() * 250, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
+          ).onfinish = function () {
+            p.remove();
+          };
+        } else {
+          setTimeout(function () { p.remove(); }, 700);
+        }
       }
     }
 
@@ -2377,8 +2632,8 @@
         const spark = document.createElement("div");
         spark.className = "spark";
         spark.style.left = Math.random() * 100 + "vw";
-        spark.style.animationDuration = 7 + Math.random() * 10 + "s";
-        spark.style.animationDelay = Math.random() * 5 + "s";
+        spark.style.animationDuration = (7 + Math.random() * 10) + "s";
+        spark.style.animationDelay = (Math.random() * 5) + "s";
         spark.style.background = i % 2 === 0 ? "#f5d076" : "#c77dff";
         container.appendChild(spark);
       }
@@ -2388,10 +2643,12 @@
       const t = document.getElementById("toastMsg");
       t.textContent = text;
       t.classList.add("show");
-      setTimeout(() => t.classList.remove("show"), 2400);
+      setTimeout(function () {
+        t.classList.remove("show");
+      }, 2400);
     }
 
-    window.addEventListener("DOMContentLoaded", () => {
+    window.addEventListener("DOMContentLoaded", function () {
       createBackgroundSparks();
       loadLocalState();
       resizeCanvas();
