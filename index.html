@@ -1,0 +1,1827 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Игровой клуб «Настолка» — Кубик Судьбы D20</title>
+  <!-- Подключение официального SDK VK Bridge для работы внутри ВК -->
+  <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-deep: #080610;
+      --bg-card: #130f24;
+      --bg-card-light: #1c1635;
+      --purple-neon: #9d4edd;
+      --purple-glow: #c77dff;
+      --purple-dark: #3c096c;
+      --gold-main: #f3cf7a;
+      --gold-bright: #ffe8a3;
+      --gold-dark: #b58932;
+      --cyan-vr: #00e5ff;
+      --danger: #ff4d6d;
+      --success: #2ec4b6;
+      --text-main: #f8f5ff;
+      --text-muted: #a99ec2;
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-deep);
+      background-image:
+        radial-gradient(circle at 50% 15%, rgba(157, 78, 221, 0.22) 0%, transparent 55%),
+        radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 15% 75%, rgba(243, 207, 122, 0.08) 0%, transparent 40%);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      padding-top: calc(12px + var(--safe-top));
+      padding-bottom: calc(88px + var(--safe-bottom));
+    }
+
+    /* Фоновые магические искры */
+    .bg-particles {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .spark {
+      position: absolute;
+      width: 3px;
+      height: 3px;
+      border-radius: 50%;
+      background: var(--gold-main);
+      opacity: 0.3;
+      animation: floatUp linear infinite;
+    }
+    @keyframes floatUp {
+      0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
+      20% { opacity: 0.5; }
+      80% { opacity: 0.5; }
+      100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
+    }
+
+    .app-container {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Шапка клуба */
+    .club-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: linear-gradient(145deg, rgba(28, 22, 53, 0.9), rgba(19, 15, 36, 0.95));
+      border: 1px solid rgba(243, 207, 122, 0.28);
+      border-radius: 20px;
+      padding: 12px 14px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      margin-bottom: 16px;
+    }
+
+    .brand-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .logo-box {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 2px solid var(--gold-main);
+      background: radial-gradient(circle, #2b124c 0%, #0d0818 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      flex-shrink: 0;
+      box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+    }
+
+    .logo-box img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .brand-text h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      background: linear-gradient(180deg, #ffffff 0%, var(--gold-main) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-sub {
+      font-size: 0.65rem;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      text-transform: uppercase;
+      margin-top: 2px;
+    }
+    .brand-sub .t-board { color: var(--gold-main); }
+    .brand-sub .t-rpg { color: var(--purple-glow); }
+    .brand-sub .t-vr { color: var(--cyan-vr); }
+
+    .brand-address {
+      font-size: 0.68rem;
+      color: var(--text-muted);
+      margin-top: 3px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .sound-btn {
+      background: rgba(157, 78, 221, 0.15);
+      border: 1px solid rgba(199, 125, 255, 0.35);
+      color: var(--text-main);
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: all 0.2s ease;
+    }
+    .sound-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Вкладки */
+    .tab-section {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+    .tab-section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Сцена с кубиком D20 */
+    .altar-card {
+      background: linear-gradient(180deg, rgba(28, 22, 53, 0.85) 0%, rgba(14, 10, 26, 0.95) 100%);
+      border: 1px solid rgba(199, 125, 255, 0.25);
+      border-radius: 24px;
+      padding: 20px 16px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.65);
+    }
+
+    .altar-title {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--gold-bright);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .altar-subtitle {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.4;
+    }
+
+    /* Шкала удачи */
+    .luck-pill-bar {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+    .luck-badge {
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 4px 9px;
+      border-radius: 99px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+    }
+    .luck-badge.gold {
+      background: rgba(243, 207, 122, 0.12);
+      border-color: rgba(243, 207, 122, 0.4);
+      color: var(--gold-main);
+    }
+
+    /* Интерактивный D20 */
+    .d20-stage {
+      position: relative;
+      width: 240px;
+      height: 240px;
+      margin: 18px auto 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      perspective: 900px;
+      cursor: pointer;
+    }
+
+    /* Магическое кольцо позади кубика */
+    .magic-ring {
+      position: absolute;
+      width: 225px;
+      height: 225px;
+      border-radius: 50%;
+      border: 1px dashed rgba(199, 125, 255, 0.35);
+      box-shadow: 0 0 40px rgba(157, 78, 221, 0.3), inset 0 0 30px rgba(157, 78, 221, 0.2);
+      animation: spinSlow 24s linear infinite;
+      pointer-events: none;
+    }
+    .magic-ring::after {
+      content: '';
+      position: absolute;
+      inset: 14px;
+      border-radius: 50%;
+      border: 1px solid rgba(243, 207, 122, 0.2);
+    }
+    @keyframes spinSlow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .d20-wrapper {
+      position: relative;
+      width: 185px;
+      height: 185px;
+      transform-style: preserve-3d;
+      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
+      filter: drop-shadow(0 12px 25px rgba(157, 78, 221, 0.55));
+      animation: idleFloat 3.5s ease-in-out infinite;
+    }
+
+    @keyframes idleFloat {
+      0%, 100% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-8px) rotate(2deg); }
+    }
+
+    .d20-wrapper.rolling {
+      animation: rollTumble 0.45s infinite linear !important;
+      filter: drop-shadow(0 0 35px rgba(199, 125, 255, 0.95)) drop-shadow(0 0 15px rgba(243, 207, 122, 0.8));
+    }
+
+    @keyframes rollTumble {
+      0%   { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1.05); }
+      25%  { transform: rotateX(160deg) rotateY(90deg) rotateZ(75deg) scale(0.92); }
+      50%  { transform: rotateX(320deg) rotateY(210deg) rotateZ(180deg) scale(1.08); }
+      75%  { transform: rotateX(180deg) rotateY(300deg) rotateZ(270deg) scale(0.95); }
+      100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg) scale(1.05); }
+    }
+
+    .d20-wrapper.crit-hit {
+      animation: critPulse 0.7s cubic-bezier(0.17, 0.89, 0.32, 1.49);
+      filter: drop-shadow(0 0 40px rgba(243, 207, 122, 1)) drop-shadow(0 0 20px rgba(157, 78, 221, 0.9));
+    }
+
+    @keyframes critPulse {
+      0% { transform: scale(0.6) rotate(-15deg); }
+      60% { transform: scale(1.18) rotate(4deg); }
+      100% { transform: scale(1) rotate(0deg); }
+    }
+
+    .d20-svg {
+      width: 100%;
+      height: 100%;
+      overflow: visible;
+    }
+
+    .d20-number {
+      font-family: 'Cinzel', serif;
+      font-weight: 900;
+      font-size: 34px;
+      fill: url(#goldGrad);
+      text-anchor: middle;
+      dominant-baseline: central;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
+    }
+
+    /* Взрыв частиц при выпадении */
+    .burst-particle {
+      position: absolute;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    /* Кнопка броска */
+    .roll-btn {
+      width: 100%;
+      max-width: 310px;
+      padding: 16px 24px;
+      border-radius: 16px;
+      border: 1px solid var(--gold-bright);
+      background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 50%, #3c096c 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      box-shadow: 0 8px 25px rgba(123, 44, 191, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transition: all 0.2s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .roll-btn:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(157, 78, 221, 0.75);
+    }
+    .roll-btn:active:not(:disabled) {
+      transform: scale(0.97);
+    }
+    .roll-btn:disabled {
+      background: #231d36;
+      border-color: rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+
+    .cooldown-box {
+      margin-top: 12px;
+      font-size: 0.78rem;
+      color: var(--gold-main);
+      font-weight: 600;
+      display: none;
+    }
+    .cooldown-box.visible {
+      display: block;
+    }
+
+    /* Карточка результата броска */
+    .result-panel {
+      margin-top: 18px;
+      background: linear-gradient(160deg, rgba(35, 25, 66, 0.95), rgba(18, 13, 36, 0.98));
+      border: 1px solid rgba(243, 207, 122, 0.35);
+      border-radius: 20px;
+      padding: 18px 16px;
+      text-align: left;
+      display: none;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+    .result-panel.show {
+      display: block;
+      animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .result-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      gap: 10px;
+    }
+
+    .roll-tier-badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 8px;
+      font-size: 0.7rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+    .tier-fail { background: rgba(255, 77, 109, 0.2); color: #ff758f; border: 1px solid rgba(255, 77, 109, 0.4); }
+    .tier-normal { background: rgba(157, 78, 221, 0.2); color: #e0aaff; border: 1px solid rgba(157, 78, 221, 0.4); }
+    .tier-high { background: rgba(0, 229, 255, 0.15); color: #72efdd; border: 1px solid rgba(0, 229, 255, 0.4); }
+    .tier-legend { background: rgba(243, 207, 122, 0.2); color: var(--gold-bright); border: 1px solid var(--gold-main); }
+
+    .result-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--gold-bright);
+      margin-bottom: 6px;
+    }
+
+    .result-prophecy {
+      font-size: 0.85rem;
+      line-height: 1.5;
+      color: var(--text-main);
+    }
+
+    .result-game-rec {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px dashed rgba(255, 255, 255, 0.12);
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+    .result-game-rec strong {
+      color: var(--gold-main);
+    }
+
+    /* Блок выпавшего промокода */
+    .loot-promo-box {
+      margin-top: 14px;
+      background: linear-gradient(135deg, rgba(243, 207, 122, 0.16), rgba(157, 78, 221, 0.25));
+      border: 1.5px solid var(--gold-main);
+      border-radius: 14px;
+      padding: 12px 14px;
+      text-align: center;
+      display: none;
+    }
+    .loot-promo-box.show {
+      display: block;
+    }
+    .loot-discount-label {
+      font-size: 0.75rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      color: var(--gold-bright);
+      letter-spacing: 0.8px;
+    }
+    .loot-code-value {
+      font-family: monospace;
+      font-size: 1.15rem;
+      font-weight: 800;
+      letter-spacing: 1.5px;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.45);
+      padding: 8px 12px;
+      border-radius: 10px;
+      margin: 8px 0 6px;
+      border: 1px dashed rgba(243, 207, 122, 0.5);
+      user-select: all;
+    }
+    .loot-saved-hint {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    /* ВКЛАДКА 2: ИНВЕНТАРЬ ПРОМОКОДОВ */
+    .section-card {
+      background: linear-gradient(180deg, rgba(28, 22, 53, 0.85) 0%, rgba(14, 10, 26, 0.95) 100%);
+      border: 1px solid rgba(199, 125, 255, 0.25);
+      border-radius: 24px;
+      padding: 20px 16px;
+      margin-bottom: 16px;
+    }
+
+    .section-heading {
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--gold-bright);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .section-desc {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 16px;
+    }
+
+    .promo-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .promo-item {
+      background: linear-gradient(145deg, rgba(38, 27, 71, 0.9), rgba(20, 15, 39, 0.95));
+      border: 1px solid rgba(243, 207, 122, 0.4);
+      border-radius: 18px;
+      padding: 14px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .promo-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .promo-discount-badge {
+      background: linear-gradient(135deg, var(--gold-main), var(--gold-dark));
+      color: #140d26;
+      font-weight: 900;
+      font-size: 0.85rem;
+      padding: 4px 10px;
+      border-radius: 8px;
+    }
+
+    .promo-date {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    .promo-code-display {
+      font-family: monospace;
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: #fff;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px dashed rgba(199, 125, 255, 0.45);
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+      letter-spacing: 1.5px;
+      margin-bottom: 8px;
+      user-select: all;
+    }
+
+    .promo-prophecy-mini {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+      line-height: 1.35;
+    }
+
+    .promo-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-copy, .btn-redeem {
+      flex: 1;
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s ease;
+    }
+    .btn-copy:active, .btn-redeem:active {
+      transform: scale(0.96);
+    }
+    .btn-copy {
+      background: rgba(157, 78, 221, 0.2);
+      border: 1px solid rgba(199, 125, 255, 0.4);
+      color: var(--text-main);
+    }
+    .btn-redeem {
+      background: rgba(255, 77, 109, 0.16);
+      border: 1px solid rgba(255, 77, 109, 0.45);
+      color: #ff8fa3;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 28px 14px;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      background: rgba(255, 255, 255, 0.02);
+      border-radius: 16px;
+      border: 1px dashed rgba(255, 255, 255, 0.1);
+    }
+
+    /* ВКЛАДКА 3: О КЛУБЕ И КАТАЛОГ ИГР */
+    .club-features {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .feature-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 14px;
+      padding: 12px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+    .feature-icon {
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+    .feature-info h4 {
+      font-size: 0.88rem;
+      color: var(--gold-main);
+      margin-bottom: 3px;
+    }
+    .feature-info p {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .search-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(199, 125, 255, 0.35);
+      color: var(--text-main);
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.85rem;
+      margin-bottom: 10px;
+      outline: none;
+    }
+    .search-input:focus {
+      border-color: var(--gold-main);
+    }
+
+    .filter-chips {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: 12px;
+      scrollbar-width: none;
+    }
+    .filter-chips::-webkit-scrollbar { display: none; }
+
+    .chip {
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-muted);
+      cursor: pointer;
+    }
+    .chip.active {
+      background: var(--purple-neon);
+      border-color: var(--purple-glow);
+      color: #fff;
+    }
+
+    .games-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 8px;
+      max-height: 420px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+    .game-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .game-name {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+    .game-sub {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .game-tag {
+      font-size: 0.65rem;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 6px;
+      background: rgba(157, 78, 221, 0.18);
+      color: var(--purple-glow);
+      white-space: nowrap;
+    }
+
+    /* Нижняя навигация */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(13, 10, 24, 0.94);
+      backdrop-filter: blur(14px);
+      border-top: 1px solid rgba(243, 207, 122, 0.22);
+      padding: 8px 16px calc(8px + var(--safe-bottom));
+      z-index: 50;
+    }
+    .bottom-nav-inner {
+      max-width: 480px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .nav-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 6px 4px;
+      border-radius: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+    .nav-btn .nav-icon {
+      font-size: 1.25rem;
+    }
+    .nav-btn.active {
+      color: var(--gold-bright);
+      background: rgba(157, 78, 221, 0.18);
+    }
+    .badge-count {
+      position: absolute;
+      top: 2px;
+      right: 22%;
+      background: var(--danger);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 800;
+      min-width: 17px;
+      height: 17px;
+      border-radius: 99px;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 0 4px;
+    }
+    .badge-count.show {
+      display: flex;
+    }
+
+    /* Модальное окно подтверждения удаления администратором */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(5, 3, 10, 0.82);
+      backdrop-filter: blur(6px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    .modal-box {
+      background: linear-gradient(160deg, #1f1738, #110c21);
+      border: 1.5px solid var(--gold-main);
+      border-radius: 22px;
+      max-width: 360px;
+      width: 100%;
+      padding: 22px 18px;
+      text-align: center;
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8);
+    }
+    .modal-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: var(--gold-bright);
+      margin-bottom: 8px;
+    }
+    .modal-text {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+    .modal-code-preview {
+      font-family: monospace;
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #fff;
+      background: rgba(0,0,0,0.45);
+      padding: 8px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      border: 1px dashed var(--danger);
+    }
+    .modal-buttons {
+      display: flex;
+      gap: 10px;
+    }
+    .modal-btn {
+      flex: 1;
+      padding: 12px;
+      border-radius: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      border: none;
+    }
+    .modal-btn.cancel {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+    }
+    .modal-btn.confirm {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    /* Уведомление-тост */
+    .toast {
+      position: fixed;
+      top: calc(16px + var(--safe-top));
+      left: 50%;
+      transform: translateX(-50%) translateY(-80px);
+      background: rgba(20, 15, 38, 0.96);
+      border: 1px solid var(--gold-main);
+      color: var(--gold-bright);
+      padding: 10px 18px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      z-index: 200;
+      transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      white-space: nowrap;
+    }
+    .toast.show {
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Фоновые искры -->
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <!-- Всплывающее уведомление -->
+  <div class="toast" id="toastMsg">Скопировано!</div>
+
+  <div class="app-container">
+    <!-- Шапка клуба -->
+    <header class="club-header">
+      <div class="brand-wrap">
+        <div class="logo-box">
+          <!-- Если положить рядом файл logo.webp, он отобразится автоматически -->
+          <img src="logo.webp" alt="Настолка" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+          <svg style="display:none; width:34px; height:34px;" viewBox="0 0 100 100">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#4a154b" stroke="#f3cf7a" stroke-width="4"/>
+            <text x="50" y="54" fill="#f3cf7a" font-family="Cinzel, serif" font-weight="900" font-size="32" text-anchor="middle" dominant-baseline="central">20</text>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>НАСТОЛКА</h1>
+          <div class="brand-sub">
+            <span class="t-board">НАСТОЛЬНЫЕ</span> •
+            <span class="t-rpg">РОЛЕВЫЕ</span> •
+            <span class="t-vr">ВИРТУАЛЬНЫЕ</span>
+          </div>
+          <div class="brand-address">📍 Шипиловский проезд 49/1</div>
+        </div>
+      </div>
+      <button class="sound-btn" id="soundToggle" title="Звук">🔊</button>
+    </header>
+
+    <!-- ВКЛАДКА 1: КУБИК СУДЬБЫ D20 -->
+    <section class="tab-section active" id="tab-dice">
+      <div class="altar-card">
+        <div class="altar-title" id="greetingTitle">Испытай благосклонность кубов</div>
+        <p class="altar-subtitle">
+          Бросай двадцатигранник раз в день: получи RPG-пророчество на партию и шанс выбить редкую скидку <strong>от 5% до 20%</strong>!
+        </p>
+
+        <div class="luck-pill-bar">
+          <span class="luck-badge">1–16 • RPG-пророчества</span>
+          <span class="luck-badge gold">17–20 • Скидки 5%–20% + Пророчество</span>
+        </div>
+
+        <!-- Сцена с 20-гранным кубиком -->
+        <div class="d20-stage" id="d20Stage" onclick="handleRollClick()">
+          <div class="magic-ring"></div>
+          <div class="d20-wrapper" id="d20Wrapper">
+            <svg class="d20-svg" viewBox="0 0 200 200">
+              <defs>
+                <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="#7b2cbf" />
+                  <stop offset="50%" stop-color="#3c096c" />
+                  <stop offset="100%" stop-color="#19002e" />
+                </linearGradient>
+                <linearGradient id="facetLight" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(199, 125, 255, 0.45)" />
+                  <stop offset="100%" stop-color="rgba(60, 9, 108, 0.1)" />
+                </linearGradient>
+                <linearGradient id="facetDark" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stop-color="rgba(16, 0, 43, 0.55)" />
+                  <stop offset="100%" stop-color="rgba(157, 78, 221, 0.15)" />
+                </linearGradient>
+                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stop-color="#ffffff" />
+                  <stop offset="45%" stop-color="#ffe8a3" />
+                  <stop offset="100%" stop-color="#d49b35" />
+                </linearGradient>
+              </defs>
+
+              <!-- Внешний контур икосаэдра (D20) -->
+              <polygon points="100,10 182,55 182,145 100,190 18,145 18,55"
+                       fill="url(#bodyGrad)" stroke="#f3cf7a" stroke-width="3" stroke-linejoin="round" />
+
+              <!-- Верхние и боковые грани D20 -->
+              <polygon points="100,10 52,65 148,65" fill="url(#facetLight)" stroke="#c77dff" stroke-width="1.5" />
+              <polygon points="100,10 18,55 52,65" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
+              <polygon points="100,10 148,65 182,55" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
+
+              <polygon points="18,55 52,65 36,128" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
+              <polygon points="18,55 36,128 18,145" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
+
+              <polygon points="182,55 148,65 164,128" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
+              <polygon points="182,55 164,128 182,145" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
+
+              <!-- Нижние грани -->
+              <polygon points="52,65 100,148 36,128" fill="url(#facetDark)" stroke="#c77dff" stroke-width="1.5" />
+              <polygon points="148,65 100,148 164,128" fill="url(#facetDark)" stroke="#c77dff" stroke-width="1.5" />
+              <polygon points="36,128 100,148 100,190" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
+              <polygon points="164,128 100,148 100,190" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
+              <polygon points="18,145 36,128 100,190" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
+              <polygon points="182,145 164,128 100,190" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
+
+              <!-- Центральная грань со значением -->
+              <polygon points="52,65 148,65 100,148"
+                       fill="rgba(45, 14, 79, 0.85)" stroke="#f3cf7a" stroke-width="2.4" stroke-linejoin="round" />
+
+              <!-- Декоративные руны на боковых гранях -->
+              <text x="100" y="45" fill="rgba(243,207,122,0.45)" font-size="11" font-weight="700" text-anchor="middle">✦</text>
+              <text x="48" y="102" fill="rgba(199,125,255,0.5)" font-size="11" font-weight="700" text-anchor="middle">◈</text>
+              <text x="152" y="102" fill="rgba(199,125,255,0.5)" font-size="11" font-weight="700" text-anchor="middle">◈</text>
+              <text x="100" y="172" fill="rgba(243,207,122,0.45)" font-size="10" font-weight="700" text-anchor="middle">VIII</text>
+
+              <!-- Главная цифра броска -->
+              <text x="100" y="96" class="d20-number" id="d20FaceText">20</text>
+            </svg>
+          </div>
+        </div>
+
+        <button class="roll-btn" id="rollBtn" onclick="handleRollClick()">
+          🎲 Бросить кубик D20
+        </button>
+
+        <div class="cooldown-box" id="cooldownBox">
+          ⏳ Следующий бросок через: <span id="cooldownTimer">00:00:00</span>
+        </div>
+
+        <!-- Панель результата -->
+        <div class="result-panel" id="resultPanel">
+          <div class="result-header">
+            <span class="roll-tier-badge tier-normal" id="resBadge">Значение: 20</span>
+            <span style="font-size: 0.75rem; color: var(--text-muted);" id="resLuckPercent">Удача: 100%</span>
+          </div>
+          <div class="result-title" id="resTitle">Критический успех!</div>
+          <div class="result-prophecy" id="resProphecy"></div>
+          <div class="result-game-rec" id="resGameRec"></div>
+
+          <!-- Появляется, если выпала скидка (17-20) -->
+          <div class="loot-promo-box" id="lootPromoBox">
+            <div class="loot-discount-label" id="lootDiscountLabel">🎉 Выпала редкая скидка 20%!</div>
+            <div class="loot-code-value" id="lootCodeValue">NASTOLKA-20-XXXX</div>
+            <div class="loot-saved-hint">
+              Промокод автоматически сохранён в раздел «Мои скидки» 🎒
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ВКЛАДКА 2: ИНВЕНТАРЬ ПРОМОКОДОВ -->
+    <section class="tab-section" id="tab-promos">
+      <div class="section-card">
+        <div class="section-heading">
+          <span>🎒 Ваши промокоды</span>
+        </div>
+        <p class="section-desc">
+          Покажите сохранённый промокод администратору в клубе <strong>«Настолка» (Шипиловский проезд 49/1)</strong>. При применении скидки администратор попросит вас нажать кнопку «Погасить и удалить».
+        </p>
+
+        <div class="promo-list" id="promoList"></div>
+      </div>
+    </section>
+
+    <!-- ВКЛАДКА 3: О КЛУБЕ И КАТАЛОГ ИГР -->
+    <section class="tab-section" id="tab-club">
+      <div class="section-card">
+        <div class="section-heading">🏰 Игровой клуб «Настолка»</div>
+        <p class="section-desc">
+          Уютное пространство на <strong>Шипиловском проезде 49/1</strong>, где настольные игры оживают, а каждая сессия превращается в приключение! Приходите с друзьями или знакомьтесь с новыми людьми — наша команда всегда поможет с выбором игры и правил.
+        </p>
+
+        <div class="club-features">
+          <div class="feature-box">
+            <div class="feature-icon">🎲</div>
+            <div class="feature-info">
+              <h4>Настольные хиты и новинки</h4>
+              <p>От быстрых пати-геймов и 19 выпусков «Имаджинариума» до глубоких стратегий вроде «Дюны» и «Сумерек Империи».</p>
+            </div>
+          </div>
+          <div class="feature-box">
+            <div class="feature-icon">🎭</div>
+            <div class="feature-info">
+              <h4>Игры с ведущим и ролевые</h4>
+              <p>Атмосферные партии в Мафию с масками, Бункер и сюжетные испытания для новичков и опытных игроков.</p>
+            </div>
+          </div>
+          <div class="feature-box">
+            <div class="feature-icon">🎮</div>
+            <div class="feature-info">
+              <h4>PlayStation 5 и виртуальные миры</h4>
+              <p>Современные видеоигровые хиты на PS5 — сразитесь с друзьями или погрузитесь в одиночные приключения.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-heading" style="margin-top: 10px;">📚 Каталог игр клуба</div>
+        <p class="section-desc" style="margin-bottom: 10px;">Список постоянно пополняется:</p>
+
+        <input type="text" class="search-input" id="gameSearch" placeholder="🔍 Найти игру (например: Бункер, Дюна, Имаджинариум)..." oninput="renderGames()" />
+
+        <div class="filter-chips" id="categoryChips">
+          <button class="chip active" onclick="setGameCategory('all', this)">Все игры</button>
+          <button class="chip" onclick="setGameCategory('host', this)">🎭 С ведущим и Пати</button>
+          <button class="chip" onclick="setGameCategory('imaginarium', this)">✨ Серия Имаджинариум</button>
+          <button class="chip" onclick="setGameCategory('strategy', this)">⚔️ Стратегии и Приключения</button>
+          <button class="chip" onclick="setGameCategory('adult', this)">🔥 18+</button>
+        </div>
+
+        <div class="games-grid" id="gamesGrid"></div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Нижнее меню навигации -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <button class="nav-btn active" onclick="switchTab('dice', this)">
+        <span class="nav-icon">🎲</span>
+        <span>Кубик D20</span>
+      </button>
+      <button class="nav-btn" onclick="switchTab('promos', this)">
+        <span class="nav-icon">🎒</span>
+        <span>Мои скидки</span>
+        <span class="badge-count" id="promoBadgeCount">0</span>
+      </button>
+      <button class="nav-btn" onclick="switchTab('club', this)">
+        <span class="nav-icon">🐉</span>
+        <span>Игры и Клуб</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- Модальное окно погашения промокода у администратора -->
+  <div class="modal-overlay" id="redeemModal">
+    <div class="modal-box">
+      <div class="modal-title">Погашение промокода</div>
+      <p class="modal-text">
+        Покажите этот экран администратору клуба <strong>«Настолка»</strong> при оплате.<br><br>
+        После нажатия кнопки <strong>«Подтвердить и удалить»</strong> промокод будет погашен навсегда.
+      </p>
+      <div class="modal-code-preview" id="modalCodePreview">NASTOLKA-15-XXXX</div>
+      <div class="modal-buttons">
+        <button class="modal-btn cancel" onclick="closeRedeemModal()">Отмена</button>
+        <button class="modal-btn confirm" id="confirmRedeemBtn">Подтвердить и удалить</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**************************************************************
+     * 1. БАЗА ПРОРОЧЕСТВ D20 И НАСТРОЙКА РЕДКОСТИ СКИДОК (5%-20%)
+     **************************************************************/
+    const D20_OUTCOMES = {
+      1: {
+        title: "1 — Критический провал!",
+        tier: "tier-fail",
+        discount: 0,
+        prophecy: "Коварный гоблин стащил ваш победный кубик прямо со стола! Сегодня лучше не блефовать на первом ходу — доверьтесь союзникам и запаситесь вкусным чаем.",
+        game: "Страдающее средневековье или Падающая башня"
+      },
+      2: {
+        title: "2 — Туман над подземельем",
+        tier: "tier-fail",
+        discount: 0,
+        prophecy: "Ваша интуиция ещё дремлет в таверне. Начните вечер с лёгкой разминочной партии, чтобы разогнать туман войны.",
+        game: "Уно или Я бананчик"
+      },
+      3: {
+        title: "3 — Ловушка мимика",
+        tier: "tier-fail",
+        discount: 0,
+        prophecy: "Сундук, который казался полным золота, попытался укусить вас за палец! Проверяйте карты соперников дважды и не верьте слишком честным глазам.",
+        game: "Манчкин или Взрывные котята"
+      },
+      4: {
+        title: "4 — Бросок новичка",
+        tier: "tier-normal",
+        discount: 0,
+        prophecy: "Ваша броня слегка скрипит, но меч наточен. Если не будете торопиться, легко обойдёте самых хитрых соперников на финишной прямой.",
+        game: "Каркассон или Мачи Коро"
+      },
+      5: {
+        title: "5 — Искра любопытства",
+        tier: "tier-normal",
+        discount: 0,
+        prophecy: "Звёзды шепчут, что сегодня вам откроется новая любимая механика. Самое время попробовать коробку, которую вы ещё ни разу не открывали!",
+        game: "Запретный остров или Письма призрака"
+      },
+      6: {
+        title: "6 — Привал у костра",
+        tier: "tier-normal",
+        discount: 0,
+        prophecy: "Тёплый вечер в отличной компании восстановит все очки здоровья и маны. Соберите друзей за одним большим столом или на диване у PS5!",
+        game: "PlayStation 5 или Серия «Имаджинариум»"
+      },
+      7: {
+        title: "7 — Счастливый жетон",
+        tier: "tier-normal",
+        discount: 0,
+        prophecy: "В вашем кармане зазвенела золотая монета. Торговля и переговоры сегодня пойдут как по маслу — меняйте овец на руду с выгодой для себя!",
+        game: "CATAN или Монополия"
+      },
+      8: {
+        title: "8 — Тень интригана",
+        tier: "tier-normal",
+        discount: 0,
+        prophecy: "Вы читаете эмоции игроков как открытую книгу заклинаний. Ни один шпион или мафиози не скроется от вашего прищура.",
+        game: "Мафия с масками, SpyFall или Нуар"
+      },
+      9: {
+        title: "9 — Верный компас",
+        tier: "tier-normal",
+        discount: 0,
+        prophecy: "Ваши маршруты идеальны, а поезда приходят точно по расписанию. Стратегическое планирование принесёт вам чистую победу.",
+        game: "Ticket to Ride: Европа или Кодовые имена"
+      },
+      10: {
+        title: "10 — Золотая середина",
+        tier: "tier-normal",
+        discount: 0,
+        prophecy: "Баланс сил на вашей стороне! Вы одинаково хороши и в дипломатии, и в открытом бою. Выбирайте любую роль — вы справитесь блестяще.",
+        game: "Цитадели: делюкс или Алиас вечеринка"
+      },
+      11: {
+        title: "11 — Тайный пароль",
+        tier: "tier-high",
+        discount: 0,
+        prophecy: "Вы понимаете тиммейтов с полуслова и одного взгляда. В командных играх ваш дуэт сегодня просто непобедим!",
+        game: "Кодовые имена: дуэт или Соображарий"
+      },
+      12: {
+        title: "12 — Боевой азарт",
+        tier: "tier-high",
+        discount: 0,
+        prophecy: "Ваши заклинания бьют точно в цель, а комбо складываются сами собой. Соперникам остаётся только прятаться за щитами!",
+        game: "Эпичные схватки боевых магов или Замес"
+      },
+      13: {
+        title: "13 — Чёртова дюжина чародея",
+        tier: "tier-high",
+        discount: 0,
+        prophecy: "Мистическое число наполняет вашу руку козырями. Даже в самой безвыходной ситуации вы найдёте лазейку и перевернёте игру!",
+        game: "Бункер или Нечто: из глубокой бездны"
+      },
+      14: {
+        title: "14 — Гранд-тактик",
+        tier: "tier-high",
+        discount: 0,
+        prophecy: "Вы видите партию на три хода вперёд. Самое время возглавить дом Атрейдесов или повести героев в опасное подземелье.",
+        game: "Дюна: завоевание и дипломатия или Подземелье"
+      },
+      15: {
+        title: "15 — Душа Таверны",
+        tier: "tier-high",
+        discount: 0,
+        prophecy: "Ваша харизма прокачана на максимум! Любое ваше слово звучит убедительно — сегодня вы король переговоров и блефа.",
+        game: "Таверна Красный Дракон или Да, тёмный властелин!"
+      },
+      16: {
+        title: "16 — Героический натиск",
+        tier: "tier-high",
+        discount: 0,
+        prophecy: "Легендарная мощь пробуждается! До трофеев осталась всего пара граней — в сегодняшней дуэли вам не будет равных.",
+        game: "Unmatched: Красная Шапочка и Беовульф"
+      },
+      17: {
+        title: "17 — Благословение Барда (+Скидка 5%)",
+        tier: "tier-legend",
+        discount: 5,
+        prefix: "BARD5",
+        prophecy: "Струны судьбы сыграли победный аккорд! Ваша удача настолько высока, что материализовалась в приятную скидку 5% на посещение клуба «Настолка».",
+        game: "Имаджинариум: Прайм-тайм или Гарри Поттер"
+      },
+      18: {
+        title: "18 — Сокровище Стража (+Скидка 10%)",
+        tier: "tier-legend",
+        discount: 10,
+        prefix: "GUARD10",
+        prophecy: "Вы нашли потайную комнату в древнем замке! В награду за зоркость хранители подземелья даруют вам скидку 10% и невероятное везение на весь вечер.",
+        game: "Бункер: первое убежище или Рик и Морти"
+      },
+      19: {
+        title: "19 — Дыхание Дракона (+Скидка 15%)",
+        tier: "tier-legend",
+        discount: 15,
+        prefix: "DRAGON15",
+        prophecy: "Фиолетовый дракон с герба «Настолки» склонил голову перед вашей мощью! Вам выпадает редкая скидка 15% и статус фаворита любой игровой партии.",
+        game: "Сумерки империи или Замес: Ктулху"
+      },
+      20: {
+        title: "20 — НАТУРАЛЬНАЯ ДВАДЦАТКА! (+Скидка 20%)",
+        tier: "tier-legend",
+        discount: 20,
+        prefix: "CRIT20",
+        prophecy: "КРИТИЧЕСКИЙ УСПЕХ! Абсолютный максимум удачи! Боги настольных, ролевых и виртуальных миров вручают вам легендарную максимальную скидку 20%!",
+        game: "Любая игра клуба + PlayStation 5"
+      }
+    };
+
+    /**
+     * Функция взвешенного выбора грани D20:
+     * Скидки (17, 18, 19, 20) падают редко (суммарный шанс ~16%):
+     * - 20 (скидка 20%): 1.5%
+     * - 19 (скидка 15%): 3.0%
+     * - 18 (скидка 10%): 5.0%
+     * - 17 (скидка 5%):  6.5%
+     * - 1..16 (предсказания без скидки): 84% (равномерно по 5.25% на грань)
+     */
+    function getWeightedD20Roll() {
+      const r = Math.random() * 100;
+      if (r < 1.5) return 20;            // 1.5% шанс на 20% скидку
+      if (r < 4.5) return 19;            // 3.0% шанс на 15% скидку
+      if (r < 9.5) return 18;            // 5.0% шанс на 10% скидку
+      if (r < 16.0) return 17;           // 6.5% шанс на 5% скидку
+      // Остальные 84% распределяются между гранями 1..16
+      return Math.floor(Math.random() * 16) + 1;
+    }
+
+    /**************************************************************
+     * 2. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА»
+     **************************************************************/
+    const CLUB_GAMES = [
+      {
+        name: "Серия «ИМАДЖИНАРИУМ» (19 выпусков)",
+        sub: "Для друзей, Страшилки, Кино, Семиречье, Детство, Кассиопея, Ариадна, Персефона, Прайм-тайм, Гармония, Химера 18+, Это был тяжёлый год, Сай-фай, Союзмультфильм, Продаётся слон, Одиссея, Сумчатый, Пандора, Лайт, Юбилейный",
+        cat: "imaginarium",
+        tag: "Ассоциации"
+      },
+      { name: "Мафия с масками", sub: "Классическая психологическая игра с ведущим и полным погружением", cat: "host", tag: "С ведущим" },
+      { name: "Бункер / Бункер – Б / Бункер: первое убежище", sub: "Дискуссионный хит на выживание после апокалипсиса", cat: "host", tag: "Хит клуба" },
+      { name: "Взрывные котята / 18+ / Зомби-котята", sub: "Быстрая и азартная карточная рулетка", cat: "adult", tag: "Вечеринка" },
+      { name: "Страдающее средневековье", sub: "Ироничная игра с мемами и чёрным юмором", cat: "host", tag: "Юмор" },
+      { name: "Цитадели: делюкс", sub: "Градостроительная стратегия с тайными ролями и интригами", cat: "strategy", tag: "Стратегия" },
+      { name: "Кодовые имена (Оригинал, Картинки, Дуэт, 18+)", sub: "Командный хит для шпионов и капитанов разведки", cat: "host", tag: "Командная" },
+      { name: "Дюна: Завоевание и дипломатия", sub: "Эпическая битва великих домов за Арракис и пряность", cat: "strategy", tag: "Стратегия" },
+      { name: "Сумерки империи", sub: "Масштабная галактическая стратегия: дипломатия, торговля и флот", cat: "strategy", tag: "Эпик" },
+      { name: "Unmatched: Красная Шапочка и Беовульф", sub: "Асимметричный тактический скирмиш легендарных героев", cat: "strategy", tag: "Дуэль / Бой" },
+      { name: "Эпичные схватки боевых магов 18+ (2 части)", sub: "Безумные комбинации заклинаний и тотальный хаос", cat: "adult", tag: "18+ / Бой" },
+      { name: "Таверна «Красный Дракон» 18+ (4 части)", sub: "Весёлые посиделки приключенцев после похода в подземелье", cat: "adult", tag: "18+ / RPG" },
+      { name: "CATAN + CATAN: Мореходы", sub: "Мировая классика колонизации, торговли и строительства", cat: "strategy", tag: "Классика" },
+      { name: "Каркассон", sub: "Уютная стратегия с выкладыванием тайлов средневековых земель", cat: "strategy", tag: "Классика" },
+      { name: "Замес (База, Ктулху, Монстры, Русы против ящеров)", sub: "Комбинируйте две уникальные фракции и захватывайте базы", cat: "strategy", tag: "Экшен" },
+      { name: "Подземелье (6 игр серии)", sub: "Приключенческая RPG-серия с квестами, монстрами и лутом", cat: "strategy", tag: "RPG" },
+      { name: "Нечто: Из глубокой бездны", sub: "Напряжённый триллер со скрытым предателем на станции", cat: "host", tag: "Мафия-стайл" },
+      { name: "Ticket to Ride: Европа (EN)", sub: "Строительство железнодорожных маршрутов по всей Европе", cat: "strategy", tag: "Семейная" },
+      { name: "Соображарий (База, Герои, Супер, Игры, Картинки, Вечеринка)", sub: "Скоростная битва эрудиции и реакции на каждую букву", cat: "host", tag: "Вечеринка" },
+      { name: "Алиас (Оригинал, Вечеринка, Дамы против Джентльменов)", sub: "Объясняйте слова на время самыми невероятными способами", cat: "host", tag: "Командная" },
+      { name: "SpyFall и SpyFall 2", sub: "Вычислите шпиона по косвенным вопросам, не выдав локацию", cat: "host", tag: "Детектив" },
+      { name: "Мачи Коро и Мачи Коро Шарп", sub: "Постройте процветающий японский мегаполис на бросках кубов", cat: "strategy", tag: "Экономика" },
+      { name: "Манчкин", sub: "Вышибайте двери, сражайтесь с монстрами и подставляйте друзей", cat: "strategy", tag: "RPG-юмор" },
+      { name: "Нуар и Письма призрака", sub: "Атмосферные детективные расследования и дедукция", cat: "strategy", tag: "Детектив" },
+      { name: "Гарри Поттер и Рик и Морти", sub: "Тематические настольные приключения по культовым вселенным", cat: "strategy", tag: "Тематические" },
+      { name: "Монополия, Клудомания, Городской убийца", sub: "Проверенные временем настольные хиты для компании", cat: "strategy", tag: "Классика" },
+      { name: "Да, тёмный властелин! / Правда и действие", sub: "Игры на импровизацию, отыгрыш и весёлые задания", cat: "adult", tag: "Вечеринка" },
+      { name: "Уно, Совпадение, Падающая башня, Я бананчик, Индейцы, Три на три, Запретный остров", sub: "Динамичные игры для любого возраста и настроения", cat: "host", tag: "Быстрые" },
+      { name: "PlayStation 5", sub: "Самые современные видеоигровые хиты для дуэлей и кооператива", cat: "strategy", tag: "Консоль PS5" }
+    ];
+
+    /**************************************************************
+     * 3. СОСТОЯНИЕ И ИНТЕГРАЦИЯ С VK BRIDGE
+     **************************************************************/
+    const STORAGE_KEY = "nastolka_d20_state_v1";
+    let soundEnabled = true;
+    let isRolling = false;
+    let currentGameCategory = "all";
+    let pendingDeletePromoId = null;
+
+    let appState = {
+      lastRollDate: null,    // Формат YYYY-MM-DD
+      lastRollValue: null,   // Число 1..20
+      promos: []             // Массив сохранённых промокодов
+    };
+
+    // Инициализация VK Bridge и загрузка данных
+    async function initApp() {
+      createBackgroundSparks();
+      loadLocalState();
+
+      if (window.vkBridge) {
+        try {
+          await vkBridge.send("VKWebAppInit");
+          // Подтягиваем имя игрока из ВК для персонального приветствия
+          const user = await vkBridge.send("VKWebAppGetUserInfo");
+          if (user && user.first_name) {
+            document.getElementById("greetingTitle").textContent =
+              `${user.first_name}, испытай удачу кубов!`;
+          }
+          // Синхронизируем с облачным хранилищем VK Storage
+          const vkData = await vkBridge.send("VKWebAppStorageGet", { keys: [STORAGE_KEY] });
+          if (vkData && vkData.keys && vkData.keys[0] && vkData.keys[0].value) {
+            const parsed = JSON.parse(vkData.keys[0].value);
+            if (parsed && typeof parsed === "object") {
+              appState = parsed;
+              saveLocalStateOnly();
+            }
+          }
+        } catch (err) {
+          // Если открыто вне ВК (просто в браузере на GitHub Pages), спокойно работаем через localStorage
+          console.log("Работа в автономном режиме браузера");
+        }
+      }
+
+      updateDailyUI();
+      renderPromos();
+      renderGames();
+      startCooldownTicker();
+    }
+
+    function getTodayString() {
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth() + 1).padStart(2, "0");
+      const d = String(now.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function loadLocalState() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+          appState = JSON.parse(raw);
+        }
+      } catch (e) {}
+    }
+
+    function saveLocalStateOnly() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
+      } catch (e) {}
+    }
+
+    async function saveState() {
+      saveLocalStateOnly();
+      if (window.vkBridge) {
+        try {
+          await vkBridge.send("VKWebAppStorageSet", {
+            key: STORAGE_KEY,
+            value: JSON.stringify(appState)
+          });
+        } catch (e) {}
+      }
+    }
+
+    // Виброотклик на смартфонах внутри ВК
+    function triggerHaptic(type = "light") {
+      if (window.vkBridge) {
+        vkBridge.send("VKWebAppTapticImpactOccurred", { style: type }).catch(() => {});
+      } else if (navigator.vibrate) {
+        navigator.vibrate(type === "heavy" ? 50 : 15);
+      }
+    }
+
+    /**************************************************************
+     * 4. ЗВУКОВОЙ СИНТЕЗАТОР (Web Audio API — без внешних файлов)
+     **************************************************************/
+    let audioCtx = null;
+    function getAudioCtx() {
+      if (!audioCtx) {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext) audioCtx = new AudioContext();
+      }
+      if (audioCtx && audioCtx.state === "suspended") {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTickSound(freq = 320) {
+      if (!soundEnabled) return;
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "triangle";
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      osc.stop(ctx.currentTime + 0.06);
+    }
+
+    function playFanfare(isDiscount) {
+      if (!soundEnabled) return;
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const notes = isDiscount ? [440, 554.37, 659.25, 880] : [330, 440, 523.25];
+      notes.forEach((freq, idx) => {
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = isDiscount ? "sawtooth" : "triangle";
+        const startTime = ctx.currentTime + idx * 0.09;
+        osc.frequency.setValueAtTime(freq, startTime);
+        gain.gain.setValueAtTime(0.1, startTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(startTime);
+        osc.stop(startTime + 0.35);
+      });
+    }
+
+    document.getElementById("soundToggle").addEventListener("click", () => {
+      soundEnabled = !soundEnabled;
+      document.getElementById("soundToggle").textContent = soundEnabled ? "🔊" : "🔇";
+    });
+
+    /**************************************************************
+     * 5. МЕХАНИКА БРОСКА КУБИКА D20 И ГЕНЕРАЦИЯ ПРОМОКОДА
+     **************************************************************/
+    function canRollToday() {
+      return appState.lastRollDate !== getTodayString();
+    }
+
+    function generateStylizedPromoCode(prefix, discount) {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let rand = "";
+      for (let i = 0; i < 4; i++) {
+        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return `NASTOLKA-${prefix}-${rand}`;
+    }
+
+    function handleRollClick() {
+      if (isRolling) return;
+      if (!canRollToday()) {
+        showToast("Кубик уже брошен сегодня! Приходите завтра 🎲");
+        triggerHaptic("light");
+        return;
+      }
+
+      isRolling = true;
+      const wrapper = document.getElementById("d20Wrapper");
+      const faceText = document.getElementById("d20FaceText");
+      const rollBtn = document.getElementById("rollBtn");
+      const resultPanel = document.getElementById("resultPanel");
+
+      rollBtn.disabled = true;
+      rollBtn.textContent = "🔮 Кубик вращается...";
+      resultPanel.classList.remove("show");
+      wrapper.classList.remove("crit-hit");
+      wrapper.classList.add("rolling");
+
+      const finalValue = getWeightedD20Roll();
+      let step = 0;
+      const totalSteps = 22;
+
+      const rollInterval = setInterval(() => {
+        step++;
+        const tempNum = Math.floor(Math.random() * 20) + 1;
+        faceText.textContent = tempNum;
+        playTickSound(240 + step * 18);
+        triggerHaptic("light");
+
+        if (step >= totalSteps) {
+          clearInterval(rollInterval);
+          finishRoll(finalValue);
+        }
+      }, 75);
+    }
+
+    function finishRoll(value) {
+      const wrapper = document.getElementById("d20Wrapper");
+      const faceText = document.getElementById("d20FaceText");
+
+      wrapper.classList.remove("rolling");
+      wrapper.classList.add("crit-hit");
+      faceText.textContent = value;
+
+      const outcome = D20_OUTCOMES[value];
+      const hasDiscount = outcome.discount > 0;
+
+      triggerHaptic("heavy");
+      playFanfare(hasDiscount);
+      spawnBurstParticles(hasDiscount);
+
+      // Сохраняем факт сегодняшнего броска
+      appState.lastRollDate = getTodayString();
+      appState.lastRollValue = value;
+
+      let generatedCode = null;
+      if (hasDiscount) {
+        generatedCode = generateStylizedPromoCode(outcome.prefix, outcome.discount);
+        const nowStr = new Date().toLocaleDateString("ru-RU", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric"
+        });
+        appState.promos.unshift({
+          id: "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+          code: generatedCode,
+          discount: outcome.discount,
+          rollValue: value,
+          title: outcome.title,
+          date: nowStr
+        });
+      }
+
+      saveState();
+      displayRollResult(value, generatedCode);
+      updateDailyUI();
+      renderPromos();
+      isRolling = false;
+    }
+
+    function displayRollResult(value, promoCode = null) {
+      const outcome = D20_OUTCOMES[value];
+      const panel = document.getElementById("resultPanel");
+      const badge = document.getElementById("resBadge");
+      const luckPct = document.getElementById("resLuckPercent");
+      const title = document.getElementById("resTitle");
+      const prophecy = document.getElementById("resProphecy");
+      const gameRec = document.getElementById("resGameRec");
+      const lootBox = document.getElementById("lootPromoBox");
+
+      badge.className = `roll-tier-badge ${outcome.tier}`;
+      badge.textContent = `Грань D20: ${value}`;
+      luckPct.textContent = `Уровень удачи: ${value * 5}%`;
+      title.textContent = outcome.title;
+      prophecy.textContent = outcome.prophecy;
+      gameRec.innerHTML = `🎲 <strong>Игра дня для вас в «Настолке»:</strong> ${outcome.game}`;
+
+      if (outcome.discount > 0) {
+        // Если промокод передан или ищем последний в инвентаре за сегодня
+        const codeToShow =
+          promoCode ||
+          (appState.promos[0] ? appState.promos[0].code : "NASTOLKA-PROMO");
+        document.getElementById("lootDiscountLabel").textContent =
+          `🎉 Выпала редкая скидка ${outcome.discount}%!`;
+        document.getElementById("lootCodeValue").textContent = codeToShow;
+        lootBox.classList.add("show");
+      } else {
+        lootBox.classList.remove("show");
+      }
+
+      panel.classList.add("show");
+    }
+
+    function updateDailyUI() {
+      const rollBtn = document.getElementById("rollBtn");
+      const cooldownBox = document.getElementById("cooldownBox");
+      const faceText = document.getElementById("d20FaceText");
+
+      if (!canRollToday()) {
+        rollBtn.disabled = true;
+        rollBtn.textContent = "✅ Бросок на сегодня сделан";
+        cooldownBox.classList.add("visible");
+        if (appState.lastRollValue) {
+          faceText.textContent = appState.lastRollValue;
+          displayRollResult(appState.lastRollValue);
+        }
+      } else {
+        rollBtn.disabled = false;
+        rollBtn.textContent = "🎲 Бросить кубик D20";
+        cooldownBox.classList.remove("visible");
+      }
+    }
+
+    function startCooldownTicker() {
+      const timerSpan = document.getElementById("cooldownTimer");
+      setInterval(() => {
+        if (canRollToday()) {
+          updateDailyUI();
+          return;
+        }
+        const now = new Date();
+        const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+        const diff = Math.max(0, tomorrow - now);
+        const h = String(Math.floor(diff / 3600000)).padStart(2, "0");
+        const m = String(Math.floor((diff % 3600000) / 60000)).padStart(2, "0");
+        const s = String(Math.floor((diff % 60000) / 1000)).padStart(2, "0");
+        timerSpan.textContent = `${h}:${m}:${s}`;
+      }, 1000);
+    }
+
+    /**************************************************************
+     * 6. ИНВЕНТАРЬ ПРОМОКОДОВ И УДАЛЕНИЕ АДМИНИСТРАТОРОМ
+     **************************************************************/
+    function renderPromos() {
+      const list = document.getElementById("promoList");
+      const badge = document.getElementById("promoBadgeCount");
+
+      const count = appState.promos.length;
+      if (count > 0) {
+        badge.textContent = count;
+        badge.classList.add("show");
+      } else {
+        badge.classList.remove("show");
+      }
+
+      if (count === 0) {
+        list.innerHTML = `
+          <div class="empty-state">
+            У вас пока нет сохранённых промокодов.<br><br>
+            Бросайте кубик D20 каждый день — на гранях <strong>17, 18, 19 и 20</strong> прячутся скидки от 5% до 20%!
+          </div>
+        `;
+        return;
+      }
+
+      list.innerHTML = appState.promos
+        .map(
+          (item) => `
+        <div class="promo-item">
+          <div class="promo-top">
+            <span class="promo-discount-badge">СКИДКА ${item.discount}% (Грань ${item.rollValue})</span>
+            <span class="promo-date">Выбит: ${item.date}</span>
+          </div>
+          <div class="promo-code-display">${item.code}</div>
+          <div class="promo-prophecy-mini">${item.title}</div>
+          <div class="promo-actions">
+            <button class="btn-copy" onclick="copyPromoCode('${item.code}')">📋 Скопировать</button>
+            <button class="btn-redeem" onclick="openRedeemModal('${item.id}', '${item.code}')">🗑 Погасить (Админ)</button>
+          </div>
+        </div>
+      `
+        )
+        .join("");
+    }
+
+    function copyPromoCode(code) {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(code).catch(() => {});
+      }
+      triggerHaptic("light");
+      showToast(`Промокод ${code} скопирован!`);
+    }
+
+    function openRedeemModal(id, code) {
+      pendingDeletePromoId = id;
+      document.getElementById("modalCodePreview").textContent = code;
+      document.getElementById("redeemModal").classList.add("open");
+      triggerHaptic("light");
+    }
+
+    function closeRedeemModal() {
+      pendingDeletePromoId = null;
+      document.getElementById("redeemModal").classList.remove("open");
+    }
+
+    document.getElementById("confirmRedeemBtn").addEventListener("click", () => {
+      if (!pendingDeletePromoId) return;
+      appState.promos = appState.promos.filter((p) => p.id !== pendingDeletePromoId);
+      saveState();
+      renderPromos();
+      closeRedeemModal();
+      triggerHaptic("heavy");
+      showToast("Промокод успешно погашен и удалён!");
+    });
+
+    /**************************************************************
+     * 7. КАТАЛОГ ИГР И НАВИГАЦИЯ
+     **************************************************************/
+    function setGameCategory(cat, btn) {
+      currentGameCategory = cat;
+      document.querySelectorAll("#categoryChips .chip").forEach((c) => c.classList.remove("active"));
+      btn.classList.add("active");
+      renderGames();
+    }
+
+    function renderGames() {
+      const query = document.getElementById("gameSearch").value.trim().toLowerCase();
+      const grid = document.getElementById("gamesGrid");
+
+      const filtered = CLUB_GAMES.filter((g) => {
+        const matchesCat = currentGameCategory === "all" || g.cat === currentGameCategory;
+        const matchesText =
+          !query ||
+          g.name.toLowerCase().includes(query) ||
+          g.sub.toLowerCase().includes(query);
+        return matchesCat && matchesText;
+      });
+
+      if (filtered.length === 0) {
+        grid.innerHTML = `<div class="empty-state">Игры по вашему запросу не найдены. Спросите у наших ведущих в клубе — каталог постоянно пополняется!</div>`;
+        return;
+      }
+
+      grid.innerHTML = filtered
+        .map(
+          (g) => `
+        <div class="game-card">
+          <div>
+            <div class="game-name">${g.name}</div>
+            <div class="game-sub">${g.sub}</div>
+          </div>
+          <span class="game-tag">${g.tag}</span>
+        </div>
+      `
+        )
+        .join("");
+    }
+
+    function switchTab(tabName, btnEl) {
+      document.querySelectorAll(".tab-section").forEach((s) => s.classList.remove("active"));
+      document.getElementById("tab-" + tabName).classList.add("active");
+
+      document.querySelectorAll(".nav-btn").forEach((b) => b.classList.remove("active"));
+      btnEl.classList.add("active");
+      triggerHaptic("light");
+    }
+
+    /**************************************************************
+     * 8. ВИЗУАЛЬНЫЕ ЭФФЕКТЫ И ЧАСТИЦЫ
+     **************************************************************/
+    function spawnBurstParticles(isGold) {
+      const stage = document.getElementById("d20Stage");
+      for (let i = 0; i < 24; i++) {
+        const p = document.createElement("div");
+        p.className = "burst-particle";
+        p.style.background = isGold
+          ? i % 2 === 0 ? "#ffe8a3" : "#9d4edd"
+          : i % 2 === 0 ? "#c77dff" : "#00e5ff";
+        stage.appendChild(p);
+
+        const angle = (Math.PI * 2 * i) / 24;
+        const dist = 75 + Math.random() * 55;
+        const tx = Math.cos(angle) * dist;
+        const ty = Math.sin(angle) * dist;
+
+        p.animate(
+          [
+            { transform: "translate(0, 0) scale(1.2)", opacity: 1 },
+            { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+          ],
+          { duration: 650 + Math.random() * 250, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
+        ).onfinish = () => p.remove();
+      }
+    }
+
+    function createBackgroundSparks() {
+      const container = document.getElementById("bgParticles");
+      for (let i = 0; i < 18; i++) {
+        const spark = document.createElement("div");
+        spark.className = "spark";
+        spark.style.left = Math.random() * 100 + "vw";
+        spark.style.animationDuration = 7 + Math.random() * 10 + "s";
+        spark.style.animationDelay = Math.random() * 5 + "s";
+        spark.style.background = i % 2 === 0 ? "#f3cf7a" : "#c77dff";
+        container.appendChild(spark);
+      }
+    }
+
+    function showToast(text) {
+      const t = document.getElementById("toastMsg");
+      t.textContent = text;
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 2400);
+    }
+
+    window.addEventListener("DOMContentLoaded", initApp);
+  </script>
+</body>
+</html>
