@@ -148,10 +148,31 @@
     .brand-sub .t-vr { color: #5ce1ff; }
 
     .brand-address {
+      display: inline-block;
       font-size: 0.73rem;
       font-weight: 600;
       color: #e6def8;
-      margin-top: 3px;
+      margin-top: 4px;
+      text-decoration: none;
+      border-bottom: 1px dashed rgba(245, 208, 118, 0.55);
+      padding-bottom: 1px;
+      transition: color 0.15s ease, border-color 0.15s ease;
+    }
+    .brand-address:hover,
+    .brand-address:active {
+      color: var(--gold-bright);
+      border-bottom-color: var(--gold-bright);
+    }
+
+    .inline-map-link {
+      color: var(--gold-main);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 2px;
+    }
+    .inline-map-link:hover,
+    .inline-map-link:active {
+      color: var(--gold-bright);
     }
 
     .sound-btn {
@@ -573,28 +594,23 @@
 
     .promo-actions {
       display: flex;
-      gap: 8px;
     }
 
-    .btn-copy, .btn-redeem {
-      flex: 1;
-      padding: 10px 12px;
-      border-radius: 10px;
-      font-family: 'Montserrat', sans-serif;
-      font-size: 0.76rem;
-      font-weight: 700;
-      cursor: pointer;
-      border: none;
-    }
-    .btn-copy {
-      background: rgba(157, 78, 221, 0.25);
-      border: 1px solid rgba(199, 125, 255, 0.45);
-      color: var(--text-main);
-    }
     .btn-redeem {
-      background: rgba(255, 77, 109, 0.18);
-      border: 1px solid rgba(255, 77, 109, 0.5);
-      color: #ff8fa3;
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 12px;
+      font-family: 'Montserrat', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 800;
+      cursor: pointer;
+      background: linear-gradient(135deg, rgba(157, 78, 221, 0.35), rgba(255, 77, 109, 0.28));
+      border: 1.5px solid var(--gold-main);
+      color: var(--gold-bright);
+      transition: transform 0.15s ease;
+    }
+    .btn-redeem:active {
+      transform: scale(0.98);
     }
 
     .empty-state {
@@ -878,7 +894,7 @@
   <div class="bg-particles" id="bgParticles"></div>
 
   <!-- Всплывающее уведомление -->
-  <div class="toast" id="toastMsg">Скопировано!</div>
+  <div class="toast" id="toastMsg">Готово!</div>
 
   <div class="app-container">
     <!-- Шапка клуба с ярким названием НАСТОЛКА -->
@@ -898,7 +914,9 @@
             <span class="t-rpg">РОЛЕВЫЕ</span> •
             <span class="t-vr">ВИРТУАЛЬНЫЕ</span>
           </div>
-          <div class="brand-address">📍 Шипиловский проезд 49/1</div>
+          <a href="https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am" target="_blank" rel="noopener noreferrer" class="brand-address">
+            📍 Шипиловский проезд 49/1
+          </a>
         </div>
       </div>
       <button class="sound-btn" id="soundToggle" title="Звук">🔊</button>
@@ -962,7 +980,7 @@
           <span>🎒 Ваши промокоды</span>
         </div>
         <p class="section-desc">
-          Покажите сохранённый промокод администратору в клубе <strong>«Настолка» (Шипиловский проезд 49/1)</strong>. При применении скидки администратор попросит вас нажать кнопку «Погасить (Админ)».
+          Покажите сохранённый промокод на стойке администратора в клубе <strong>«Настолка»</strong> (<a href="https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловский проезд 49/1</a>). При получении скидки нажмите кнопку «Применить промокод на стойке администратора».
         </p>
 
         <div class="promo-list" id="promoList"></div>
@@ -974,7 +992,7 @@
       <div class="section-card">
         <div class="section-heading">🏰 Игровой клуб «Настолка»</div>
         <p class="section-desc">
-          Уютное пространство на <strong>Шипиловском проезде 49/1</strong>, где настольные игры оживают, а каждая сессия превращается в приключение! Приходите с друзьями или знакомьтесь с новыми людьми — наша команда всегда поможет с выбором игры и правил.
+          Уютное пространство на <a href="https://yandex.ru/maps/org/nastolka/190169100921?si=q6d790y8cd8gpje5z4my5745am" target="_blank" rel="noopener noreferrer" class="inline-map-link">Шипиловском проезде 49/1</a>, где настольные игры оживают, а каждая сессия превращается в приключение! Приходите с друзьями или знакомьтесь с новыми людьми — наша команда всегда поможет с выбором игры и правил.
         </p>
 
         <div class="club-features">
@@ -982,21 +1000,35 @@
             <div class="feature-icon">🎲</div>
             <div class="feature-info">
               <h4>Настольные хиты и новинки</h4>
-              <p>От быстрых пати-геймов и 19 выпусков «Имаджинариума» до глубоких стратегий вроде «Дюны» и «Сумерек Империи».</p>
+              <p>От культовых пати-геймов («Alias», «CodeNames») и всех видов «Имаджинариума» до глубоких стратегий вроде «Ticket to Ride», «Сумерек Империи».</p>
             </div>
           </div>
           <div class="feature-box">
             <div class="feature-icon">🎭</div>
             <div class="feature-info">
               <h4>Игры с ведущим и ролевые</h4>
-              <p>Атмосферные партии в Мафию с масками, Бункер и сюжетные испытания для новичков и опытных игроков.</p>
+              <p>Атмосферные и стилизованные игровые сессии «Мафии», «Бункера» и сюжетные испытания для новичков и опытных игроков.</p>
+            </div>
+          </div>
+          <div class="feature-box">
+            <div class="feature-icon">🐉</div>
+            <div class="feature-info">
+              <h4>Dungeons &amp; Dragons (D&amp;D)</h4>
+              <p>Захватывающие настольные ролевые приключения (ваншоты и кампании) с опытными Мастерами Подземелий, детальным лором и миниатюрами.</p>
             </div>
           </div>
           <div class="feature-box">
             <div class="feature-icon">🎮</div>
             <div class="feature-info">
               <h4>PlayStation 5 и виртуальные миры</h4>
-              <p>Современные видеоигровые хиты на PS5 — сразитесь с друзьями или погрузитесь в одиночные приключения.</p>
+              <p>Современные хиты на PS5 — сразитесь с друзьями или погрузитесь в одиночные приключения.</p>
+            </div>
+          </div>
+          <div class="feature-box">
+            <div class="feature-icon">🥽</div>
+            <div class="feature-info">
+              <h4>Погружение в VR (Виртуальная реальность)</h4>
+              <p>Испытайте полное присутствие в виртуальных мирах с современными VR-шлемами — от динамичных ритм-игр и шутеров до кооперативных квестов.</p>
             </div>
           </div>
         </div>
@@ -1008,10 +1040,10 @@
 
         <div class="filter-chips" id="categoryChips">
           <button class="chip active" onclick="setGameCategory('all', this)">Все игры</button>
-          <button class="chip" onclick="setGameCategory('host', this)">🎭 С ведущим и Пати</button>
-          <button class="chip" onclick="setGameCategory('imaginarium', this)">✨ Серия Имаджинариум</button>
-          <button class="chip" onclick="setGameCategory('strategy', this)">⚔️ Стратегии и Приключения</button>
-          <button class="chip" onclick="setGameCategory('adult', this)">🔥 18+</button>
+          <button class="chip" onclick="setGameCategory('host', this)">🎭 Игры с ведущим</button>
+          <button class="chip" onclick="setGameCategory('board', this)">🎲 Настольные игры</button>
+          <button class="chip" onclick="setGameCategory('ps5', this)">🎮 PS5</button>
+          <button class="chip" onclick="setGameCategory('vr', this)">🥽 VR</button>
         </div>
 
         <div class="games-grid" id="gamesGrid"></div>
@@ -1038,25 +1070,25 @@
     </div>
   </nav>
 
-  <!-- Модальное окно погашения промокода у администратора -->
+  <!-- Модальное окно погашения промокода на стойке администратора -->
   <div class="modal-overlay" id="redeemModal">
     <div class="modal-box">
-      <div class="modal-title">Погашение промокода</div>
+      <div class="modal-title">Применение промокода</div>
       <p class="modal-text">
-        Покажите этот экран администратору клуба <strong>«Настолка»</strong> при оплате.<br><br>
-        После нажатия кнопки <strong>«Подтвердить и удалить»</strong> промокод будет погашен навсегда.
+        Покажите этот экран на стойке администратора клуба <strong>«Настолка»</strong> при оплате.<br><br>
+        После нажатия кнопки <strong>«Подтвердить и применить»</strong> промокод будет погашен.
       </p>
       <div class="modal-code-preview" id="modalCodePreview">NASTOLKA-15-XXXX</div>
       <div class="modal-buttons">
         <button class="modal-btn cancel" onclick="closeRedeemModal()">Отмена</button>
-        <button class="modal-btn confirm" id="confirmRedeemBtn">Подтвердить и удалить</button>
+        <button class="modal-btn confirm" id="confirmRedeemBtn">Подтвердить и применить</button>
       </div>
     </div>
   </div>
 
   <script>
     /**************************************************************
-     * 1. БАЗА ПРОРОЧЕСТВ D20 И СКИДКИ (17–20)
+     * 1. БАЗА ПРОРОЧЕСТВ D20 И СКИДКИ (17–20) — ТОЛЬКО 1 ИГРА ДНЯ
      **************************************************************/
     const D20_OUTCOMES = {
       1: {
@@ -1064,105 +1096,105 @@
         tier: "tier-fail",
         discount: 0,
         prophecy: "Коварный гоблин стащил ваш победный кубик прямо со стола! Сегодня лучше не блефовать на первом ходу — доверьтесь союзникам и запаситесь вкусным чаем.",
-        game: "Страдающее средневековье или Падающая башня"
+        game: "Страдающее средневековье"
       },
       2: {
         title: "2 — Туман над подземельем",
         tier: "tier-fail",
         discount: 0,
         prophecy: "Ваша интуиция ещё дремлет в таверне. Начните вечер с лёгкой разминочной партии, чтобы разогнать туман войны.",
-        game: "Уно или Я бананчик"
+        game: "Уно"
       },
       3: {
         title: "3 — Ловушка мимика",
         tier: "tier-fail",
         discount: 0,
         prophecy: "Сундук, который казался полным золота, попытался укусить вас за палец! Проверяйте карты соперников дважды и не верьте слишком честным глазам.",
-        game: "Манчкин или Взрывные котята"
+        game: "Манчкин"
       },
       4: {
         title: "4 — Бросок новичка",
         tier: "tier-normal",
         discount: 0,
         prophecy: "Ваша броня слегка скрипит, но меч наточен. Если не будете торопиться, легко обойдёте самых хитрых соперников на финишной прямой.",
-        game: "Каркассон или Мачи Коро"
+        game: "Каркассон"
       },
       5: {
         title: "5 — Искра любопытства",
         tier: "tier-normal",
         discount: 0,
         prophecy: "Звёзды шепчут, что сегодня вам откроется новая любимая механика. Самое время попробовать коробку, которую вы ещё ни разу не открывали!",
-        game: "Запретный остров или Письма призрака"
+        game: "Запретный остров"
       },
       6: {
         title: "6 — Привал у костра",
         tier: "tier-normal",
         discount: 0,
-        prophecy: "Тёплый вечер в отличной компании восстановит все очки здоровья и маны. Соберите друзей за одним большим столом или на диване у PS5!",
-        game: "PlayStation 5 или Серия «Имаджинариум»"
+        prophecy: "Тёплый вечер в отличной компании восстановит все очки здоровья и маны. Соберите друзей за одним большим столом!",
+        game: "Имаджинариум"
       },
       7: {
         title: "7 — Счастливый жетон",
         tier: "tier-normal",
         discount: 0,
         prophecy: "В вашем кармане зазвенела золотая монета. Торговля и переговоры сегодня пойдут как по маслу — меняйте овец на руду с выгодой для себя!",
-        game: "CATAN или Монополия"
+        game: "CATAN"
       },
       8: {
         title: "8 — Тень интригана",
         tier: "tier-normal",
         discount: 0,
         prophecy: "Вы читаете эмоции игроков как открытую книгу заклинаний. Ни один шпион или мафиози не скроется от вашего прищура.",
-        game: "Мафия с масками, SpyFall или Нуар"
+        game: "Мафия с масками"
       },
       9: {
         title: "9 — Верный компас",
         tier: "tier-normal",
         discount: 0,
         prophecy: "Ваши маршруты идеальны, а поезда приходят точно по расписанию. Стратегическое планирование принесёт вам чистую победу.",
-        game: "Ticket to Ride: Европа или Кодовые имена"
+        game: "Ticket to Ride: Европа"
       },
       10: {
         title: "10 — Золотая середина",
         tier: "tier-normal",
         discount: 0,
         prophecy: "Баланс сил на вашей стороне! Вы одинаково хороши и в дипломатии, и в открытом бою. Выбирайте любую роль — вы справитесь блестяще.",
-        game: "Цитадели: делюкс или Алиас вечеринка"
+        game: "Цитадели: делюкс"
       },
       11: {
         title: "11 — Тайный пароль",
         tier: "tier-high",
         discount: 0,
         prophecy: "Вы понимаете тиммейтов с полуслова и одного взгляда. В командных играх ваш дуэт сегодня просто непобедим!",
-        game: "Кодовые имена: дуэт или Соображарий"
+        game: "CodeNames (Кодовые имена)"
       },
       12: {
         title: "12 — Боевой азарт",
         tier: "tier-high",
         discount: 0,
         prophecy: "Ваши заклинания бьют точно в цель, а комбо складываются сами собой. Соперникам остаётся только прятаться за щитами!",
-        game: "Эпичные схватки боевых магов или Замес"
+        game: "Эпичные схватки боевых магов"
       },
       13: {
         title: "13 — Чёртова дюжина чародея",
         tier: "tier-high",
         discount: 0,
         prophecy: "Мистическое число наполняет вашу руку козырями. Даже в самой безвыходной ситуации вы найдёте лазейку и перевернёте игру!",
-        game: "Бункер или Нечто: из глубокой бездны"
+        game: "Бункер"
       },
       14: {
         title: "14 — Гранд-тактик",
         tier: "tier-high",
         discount: 0,
-        prophecy: "Вы видите партию на три хода вперёд. Самое время возглавить дом Атрейдесов или повести героев в опасное подземелье.",
-        game: "Дюна: завоевание и дипломатия или Подземелье"
+        prophecy: "Вы видите партию на три хода вперёд. Самое время возглавить великий дом или повести героев в опасное приключение.",
+        game: "Дюна: Завоевание и дипломатия"
       },
       15: {
         title: "15 — Душа Таверны",
         tier: "tier-high",
         discount: 0,
         prophecy: "Ваша харизма прокачана на максимум! Любое ваше слово звучит убедительно — сегодня вы король переговоров и блефа.",
-        game: "Таверна Красный Дракон или Да, тёмный властелин!"
+        game: "Таверна «Красный Дракон»"
       },
       16: {
         title: "16 — Героический натиск",
@@ -1177,7 +1209,7 @@
         discount: 5,
         prefix: "BARD5",
         prophecy: "Струны судьбы сыграли победный аккорд! Ваша удача настолько высока, что материализовалась в приятную скидку 5% на посещение клуба «Настолка».",
-        game: "Имаджинариум: Прайм-тайм или Гарри Поттер"
+        game: "Alias (Алиас)"
       },
       18: {
         title: "18 — Сокровище Стража (+Скидка 10%)",
@@ -1185,7 +1217,7 @@
         discount: 10,
         prefix: "GUARD10",
         prophecy: "Вы нашли потайную комнату в древнем замке! В награду за зоркость хранители подземелья даруют вам скидку 10% и невероятное везение на весь вечер.",
-        game: "Бункер: первое убежище или Рик и Морти"
+        game: "Бункер: Первое убежище"
       },
       19: {
         title: "19 — Дыхание Дракона (+Скидка 15%)",
@@ -1193,7 +1225,7 @@
         discount: 15,
         prefix: "DRAGON15",
         prophecy: "Фиолетовый дракон с герба «Настолки» склонил голову перед вашей мощью! Вам выпадает редкая скидка 15% и статус фаворита любой игровой партии.",
-        game: "Сумерки империи или Замес: Ктулху"
+        game: "Сумерки Империи"
       },
       20: {
         title: "20 — НАТУРАЛЬНАЯ ДВАДЦАТКА! (+Скидка 20%)",
@@ -1201,17 +1233,12 @@
         discount: 20,
         prefix: "CRIT20",
         prophecy: "КРИТИЧЕСКИЙ УСПЕХ! Абсолютный максимум удачи! Боги настольных, ролевых и виртуальных миров вручают вам легендарную максимальную скидку 20%!",
-        game: "Любая игра клуба + PlayStation 5"
+        game: "Dungeons & Dragons (D&D)"
       }
     };
 
     /**
      * СЛОЖНЫЙ ШАНС НА СКИДКУ: ровно 1 к 20 (5% суммарно на все скидочные грани 17..20)
-     * - 20 (скидка 20%): 0.5%
-     * - 19 (скидка 15%): 1.0%
-     * - 18 (скидка 10%): 1.5%
-     * - 17 (скидка 5%):  2.0%
-     * - 1..16 (RPG-пророчества без скидки): 95.0%
      */
     function getWeightedD20Roll() {
       const r = Math.random() * 100;
@@ -1219,7 +1246,6 @@
       if (r < 1.5) return 19;            // 1.0% — скидка 15%
       if (r < 3.0) return 18;            // 1.5% — скидка 10%
       if (r < 5.0) return 17;            // 2.0% — скидка 5%
-      // Остальные 95% распределяются равномерно между гранями 1..16
       return Math.floor(Math.random() * 16) + 1;
     }
 
@@ -1229,15 +1255,13 @@
     const canvas = document.getElementById("d20Canvas");
     const ctx = canvas.getContext("2d");
 
-    let currentFaceValue = 20; // На старте в центре всегда грань 20
+    let currentFaceValue = 20;
     let isRolling = false;
 
-    // Параметры прыжка 3D-кубика
     let jumpOffsetY = 0;
     let jumpOffsetX = 0;
     let jumpScaleZ = 1.0;
 
-    // 12 вершин правильного икосаэдра
     const PHI = (1 + Math.sqrt(5)) / 2;
     const RAW_VERTS = [
       [-1,  PHI, 0], [ 1,  PHI, 0], [-1, -PHI, 0], [ 1, -PHI, 0],
@@ -1248,7 +1272,6 @@
       return { x: v[0] / len, y: v[1] / len, z: v[2] / len };
     });
 
-    // 20 треугольных граней
     const RAW_TRIS = [
       [5, 11, 4],  [2, 4, 11],  [5, 4, 9],   [5, 9, 1],   [5, 1, 0],
       [5, 0, 11],  [1, 9, 8],   [9, 4, 3],   [11, 0, 10], [0, 1, 7],
@@ -1256,7 +1279,6 @@
       [3, 2, 6],   [2, 10, 6],  [10, 7, 6],  [7, 8, 6],   [8, 3, 6]
     ];
 
-    // Уникальные числа 1..20 на гранях
     const FACE_NUMBERS = [
       20, 8, 14, 2, 12,
       18, 6, 16, 4, 10,
@@ -1381,21 +1403,16 @@
         let v2 = RAW_VERTS[tri[2]];
 
         const center = vecScale(vecAdd(vecAdd(v0, v1), v2), 1 / 3);
-        // Нормаль грани направлена наружу (при совпадении с +Z смотрит прямо на игрока)
         const uz = vecNorm(center);
-        // Направление на верхнюю вершину v0 (при совпадении с +Y вершина треугольника смотрит строго вверх)
         const uy = vecNorm(vecSub(v0, center));
-        // Правая ось грани (+X)
         const ux = vecNorm(vecCross(uy, uz));
 
-        // Упорядочиваем нижние углы: v1 — левый нижний (-X), v2 — правый нижний (+X)
         if (vecDot(vecSub(v1, center), ux) > 0) {
           const tmp = v1; v1 = v2; v2 = tmp;
         }
 
         FACES.push({ num, v0, v1, v2, center, normal: uz });
 
-        // Матрица поворота, которая ставит грань num строго лицом к экрану (+Z) и строго ровно вершиной вверх (+Y)
         const rotMat = [
           ux.x, ux.y, ux.z,
           uy.x, uy.y, uy.z,
@@ -1424,7 +1441,6 @@
       };
     }
 
-    // Отрисовка 3D-кубика D20
     function drawD20Scene(time) {
       const width = canvas.clientWidth || 340;
       const height = canvas.clientHeight || 310;
@@ -1434,7 +1450,6 @@
       const baseCenterY = height * 0.46;
       const centerY = baseCenterY + jumpOffsetY;
 
-      // Лёгкое живое дыхание без наклона по оси Z, чтобы выпавшее число всегда стояло идеально ровно
       let renderQuat = activeQuat;
       if (!isRolling) {
         const idleQ = quatFromEuler(
@@ -1445,7 +1460,6 @@
         renderQuat = quatMultiply(idleQ, TARGET_QUATS[currentFaceValue]);
       }
 
-      // 1. Тень под кубиком на столе
       const heightFactor = Math.max(0, -jumpOffsetY / 85);
       const shadowRx = 72 * (1 - heightFactor * 0.38);
       const shadowRy = 26 * (1 - heightFactor * 0.38);
@@ -1462,7 +1476,6 @@
       ctx.fill();
       ctx.restore();
 
-      // 2. Проекция 20 граней
       const baseRadius = Math.min(width, height) * 0.33 * jumpScaleZ;
       const camDist = 3.6;
       const lightDir = vecNorm({ x: -0.3, y: 0.55, z: 0.85 });
@@ -1479,7 +1492,6 @@
         const p1 = projectVertex(rv1, centerX, centerY, baseRadius, camDist);
         const p2 = projectVertex(rv2, centerX, centerY, baseRadius, camDist);
 
-        // В экранных координатах (ось Y вниз) передние грани (p0 сверху, p1 слева внизу, p2 справа внизу) имеют cross2D < 0
         const cross2D = (p1.x - p0.x) * (p2.y - p0.y) - (p1.y - p0.y) * (p2.x - p0.x);
         if (cross2D >= 0) continue;
 
@@ -1494,10 +1506,8 @@
         });
       }
 
-      // Сортируем от дальних к ближним (чтобы передняя грань рисовалась поверх)
       visibleFaces.sort((a, b) => a.avgZ - b.avgZ);
 
-      // 3. Рисуем грани и цифры
       for (const vf of visibleFaces) {
         const { p0, p1, p2, rNorm, num } = vf;
 
@@ -1518,13 +1528,11 @@
         ctx.fillStyle = `rgb(${rCol}, ${gCol}, ${bCol})`;
         ctx.fill();
 
-        // Золотые рёбра
         ctx.lineJoin = "round";
         ctx.lineWidth = frontness > 0.82 ? 3.0 : 1.8;
         ctx.strokeStyle = frontness > 0.82 ? "#ffe89e" : "rgba(245, 208, 118, 0.75)";
         ctx.stroke();
 
-        // Внутренняя треугольная окантовка грани
         const cx = (p0.x + p1.x + p2.x) / 3;
         const cy = (p0.y + p1.y + p2.y) / 3;
         ctx.beginPath();
@@ -1536,7 +1544,6 @@
         ctx.strokeStyle = frontness > 0.82 ? "rgba(255, 232, 158, 0.55)" : "rgba(199, 125, 255, 0.4)";
         ctx.stroke();
 
-        // 4. Рисуем цифру строго по осям треугольника (v1->v2 — горизонталь вправо, v0->midBottom — вертикаль вниз)
         const midBottomX = (p1.x + p2.x) * 0.5;
         const midBottomY = (p1.y + p2.y) * 0.5;
 
@@ -1558,7 +1565,6 @@
         ctx.fillStyle = num >= 17 ? "#fff3b0" : "#ffffff";
         ctx.fillText(String(num), 0, 4);
 
-        // Линия внизу у 6 и 9
         if (num === 6 || num === 9) {
           ctx.beginPath();
           ctx.moveTo(-10, 23);
@@ -1577,7 +1583,6 @@
       requestAnimationFrame(drawD20Scene);
     }
 
-    // Анимация 3D-прыжка, вращения и отскоков с точной фиксацией на грани targetValue
     function animate3DJumpAndBounce(targetValue, onDone) {
       const startQuat = { ...TARGET_QUATS[currentFaceValue] };
       const endQuat = { ...TARGET_QUATS[targetValue] };
@@ -1586,7 +1591,6 @@
       const startTime = performance.now();
       const dirX = (Math.random() < 0.5 ? -1 : 1) * (14 + Math.random() * 10);
 
-      // Чётное число оборотов (4*PI), чтобы кватернион вращения в конце (t=1) равнялся строго единице (+1)
       const spinsX = 2 * Math.PI * 2;
       const spinsY = 2 * Math.PI * 2;
       const spinsZ = 2 * Math.PI * 2;
@@ -1729,7 +1733,6 @@
       playFanfare(hasDiscount);
       spawnBurstParticles(hasDiscount);
 
-      // Фиксируем сегодняшний бросок
       appState.lastRollDate = getTodayString();
       appState.lastRollValue = value;
 
@@ -1846,43 +1849,238 @@
     }
 
     /**************************************************************
-     * 4. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА»
+     * 4. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА» (КАТЕГОРИИ + ЖАНРЫ)
      **************************************************************/
     const CLUB_GAMES = [
+      // Игры с ведущим (host)
+      {
+        name: "Мафия с масками",
+        sub: "Атмосферные стилизованные сессии с ведущим и полным погружением",
+        cat: "host",
+        tag: "Психология / Детектив"
+      },
+      {
+        name: "Бункер / Бункер – Б / Бункер: первое убежище",
+        sub: "Дискуссионный хит на выживание после апокалипсиса",
+        cat: "host",
+        tag: "Дискуссия / Выживание"
+      },
+      {
+        name: "Dungeons & Dragons (D&D)",
+        sub: "Ролевые кампании и ваншоты с Мастером Подземелий",
+        cat: "host",
+        tag: "Ролевая (НРИ)"
+      },
+      {
+        name: "Сюжетные испытания с ведущим",
+        sub: "Интерактивные ролевые сценарии для новичков и опытных игроков",
+        cat: "host",
+        tag: "Сюжет / Ролевая"
+      },
+
+      // Настольные игры (board)
       {
         name: "Серия «ИМАДЖИНАРИУМ» (19 выпусков)",
-        sub: "Для друзей, Страшилки, Кино, Семиречье, Детство, Кассиопея, Ариадна, Персефона, Прайм-тайм, Гармония, Химера 18+, Это был тяжёлый год, Сай-фай, Союзмультфильм, Продаётся слон, Одиссея, Сумчатый, Пандора, Лайт, Юбилейный",
-        cat: "imaginarium",
+        sub: "Для друзей, Страшилки, Кино, Семиречье, Детство, Кассиопея, Ариадна, Персефона, Прайм-тайм, Гармония, Химера 18+, Сай-фай, Союзмультфильм, Одиссея, Пандора, Юбилейный и др.",
+        cat: "board",
         tag: "Ассоциации"
       },
-      { name: "Мафия с масками", sub: "Классическая психологическая игра с ведущим и полным погружением", cat: "host", tag: "С ведущим" },
-      { name: "Бункер / Бункер – Б / Бункер: первое убежище", sub: "Дискуссионный хит на выживание после апокалипсиса", cat: "host", tag: "Хит клуба" },
-      { name: "Взрывные котята / 18+ / Зомби-котята", sub: "Быстрая и азартная карточная рулетка", cat: "adult", tag: "Вечеринка" },
-      { name: "Страдающее средневековье", sub: "Ироничная игра с мемами и чёрным юмором", cat: "host", tag: "Юмор" },
-      { name: "Цитадели: делюкс", sub: "Градостроительная стратегия с тайными ролями и интригами", cat: "strategy", tag: "Стратегия" },
-      { name: "Кодовые имена (Оригинал, Картинки, Дуэт, 18+)", sub: "Командный хит для шпионов и капитанов разведки", cat: "host", tag: "Командная" },
-      { name: "Дюна: Завоевание и дипломатия", sub: "Эпическая битва великих домов за Арракис и пряность", cat: "strategy", tag: "Стратегия" },
-      { name: "Сумерки империи", sub: "Масштабная галактическая стратегия: дипломатия, торговля и флот", cat: "strategy", tag: "Эпик" },
-      { name: "Unmatched: Красная Шапочка и Беовульф", sub: "Асимметричный тактический скирмиш легендарных героев", cat: "strategy", tag: "Дуэль / Бой" },
-      { name: "Эпичные схватки боевых магов 18+ (2 части)", sub: "Безумные комбинации заклинаний и тотальный хаос", cat: "adult", tag: "18+ / Бой" },
-      { name: "Таверна «Красный Дракон» 18+ (4 части)", sub: "Весёлые посиделки приключенцев после похода в подземелье", cat: "adult", tag: "18+ / RPG" },
-      { name: "CATAN + CATAN: Мореходы", sub: "Мировая классика колонизации, торговли и строительства", cat: "strategy", tag: "Классика" },
-      { name: "Каркассон", sub: "Уютная стратегия с выкладыванием тайлов средневековых земель", cat: "strategy", tag: "Классика" },
-      { name: "Замес (База, Ктулху, Монстры, Русы против ящеров)", sub: "Комбинируйте две уникальные фракции и захватывайте базы", cat: "strategy", tag: "Экшен" },
-      { name: "Подземелье (6 игр серии)", sub: "Приключенческая RPG-серия с квестами, монстрами и лутом", cat: "strategy", tag: "RPG" },
-      { name: "Нечто: Из глубокой бездны", sub: "Напряжённый триллер со скрытым предателем на станции", cat: "host", tag: "Мафия-стайл" },
-      { name: "Ticket to Ride: Европа (EN)", sub: "Строительство железнодорожных маршрутов по всей Европе", cat: "strategy", tag: "Семейная" },
-      { name: "Соображарий (База, Герои, Супер, Игры, Картинки, Вечеринка)", sub: "Скоростная битва эрудиции и реакции на каждую букву", cat: "host", tag: "Вечеринка" },
-      { name: "Алиас (Оригинал, Вечеринка, Дамы против Джентльменов)", sub: "Объясняйте слова на время самыми невероятными способами", cat: "host", tag: "Командная" },
-      { name: "SpyFall и SpyFall 2", sub: "Вычислите шпиона по косвенным вопросам, не выдав локацию", cat: "host", tag: "Детектив" },
-      { name: "Мачи Коро и Мачи Коро Шарп", sub: "Постройте процветающий японский мегаполис на бросках кубов", cat: "strategy", tag: "Экономика" },
-      { name: "Манчкин", sub: "Вышибайте двери, сражайтесь с монстрами и подставляйте друзей", cat: "strategy", tag: "RPG-юмор" },
-      { name: "Нуар и Письма призрака", sub: "Атмосферные детективные расследования и дедукция", cat: "strategy", tag: "Детектив" },
-      { name: "Гарри Поттер и Рик и Морти", sub: "Тематические настольные приключения по культовым вселенным", cat: "strategy", tag: "Тематические" },
-      { name: "Монополия, Клудомания, Городской убийца", sub: "Проверенные временем настольные хиты для компании", cat: "strategy", tag: "Классика" },
-      { name: "Да, тёмный властелин! / Правда и действие", sub: "Игры на импровизацию, отыгрыш и весёлые задания", cat: "adult", tag: "Вечеринка" },
-      { name: "Уно, Совпадение, Падающая башня, Я бананчик, Индейцы, Три на три, Запретный остров", sub: "Динамичные игры для любого возраста и настроения", cat: "host", tag: "Быстрые" },
-      { name: "PlayStation 5", sub: "Самые современные видеоигровые хиты для дуэлей и кооператива", cat: "strategy", tag: "Консоль PS5" }
+      {
+        name: "Ticket to Ride: Европа",
+        sub: "Строительство железнодорожных маршрутов по всей Европе",
+        cat: "board",
+        tag: "Стратегия"
+      },
+      {
+        name: "Сумерки Империи",
+        sub: "Масштабная галактическая стратегия: дипломатия, торговля и флот",
+        cat: "board",
+        tag: "Стратегия"
+      },
+      {
+        name: "Дюна: Завоевание и дипломатия",
+        sub: "Эпическая битва великих домов за Арракис и пряность",
+        cat: "board",
+        tag: "Стратегия"
+      },
+      {
+        name: "CATAN + CATAN: Мореходы",
+        sub: "Мировая классика колонизации, торговли и строительства",
+        cat: "board",
+        tag: "Стратегия"
+      },
+      {
+        name: "Каркассон",
+        sub: "Уютное средневековое градостроительство с выкладыванием тайлов",
+        cat: "board",
+        tag: "Стратегия"
+      },
+      {
+        name: "Цитадели: делюкс",
+        sub: "Градостроительство с тайными ролями и интригами",
+        cat: "board",
+        tag: "Стратегия"
+      },
+      {
+        name: "CodeNames (Оригинал, Картинки, Дуэт, 18+)",
+        sub: "Культовый командный пати-гейм для шпионов и капитанов разведки",
+        cat: "board",
+        tag: "Детектив / Вечеринка"
+      },
+      {
+        name: "Alias (Оригинал, Вечеринка, Дамы против Джентльменов)",
+        sub: "Объясняйте слова на время самыми невероятными способами",
+        cat: "board",
+        tag: "Вечеринка"
+      },
+      {
+        name: "Нуар и Письма призрака",
+        sub: "Атмосферные расследования, улики и чистая дедукция",
+        cat: "board",
+        tag: "Детектив"
+      },
+      {
+        name: "SpyFall и SpyFall 2",
+        sub: "Вычислите шпиона по косвенным вопросам, не выдав локацию",
+        cat: "board",
+        tag: "Детектив"
+      },
+      {
+        name: "Нечто: Из глубокой бездны",
+        sub: "Напряжённый триллер со скрытым предателем на полярной станции",
+        cat: "board",
+        tag: "Детектив / Выживание"
+      },
+      {
+        name: "Unmatched: Красная Шапочка и Беовульф",
+        sub: "Асимметричный тактический поединок легендарных героев",
+        cat: "board",
+        tag: "Тактика / Дуэль"
+      },
+      {
+        name: "Замес (База, Ктулху, Монстры, Русы против ящеров)",
+        sub: "Комбинируйте две уникальные фракции и захватывайте базы",
+        cat: "board",
+        tag: "Стратегия / Экшен"
+      },
+      {
+        name: "Подземелье (6 игр серии)",
+        sub: "Приключенческая серия с квестами, монстрами и лутом",
+        cat: "board",
+        tag: "Приключения"
+      },
+      {
+        name: "Манчкин",
+        sub: "Вышибайте двери, сражайтесь с монстрами и подставляйте друзей",
+        cat: "board",
+        tag: "Приключения / Юмор"
+      },
+      {
+        name: "Мачи Коро и Мачи Коро Шарп",
+        sub: "Постройте процветающий японский мегаполис на бросках кубов",
+        cat: "board",
+        tag: "Экономика"
+      },
+      {
+        name: "Взрывные котята / 18+ / Зомби-котята",
+        sub: "Быстрая и азартная карточная рулетка",
+        cat: "board",
+        tag: "Вечеринка"
+      },
+      {
+        name: "Страдающее средневековье",
+        sub: "Ироничная карточная игра с мемами и чёрным юмором",
+        cat: "board",
+        tag: "Вечеринка / Юмор"
+      },
+      {
+        name: "Эпичные схватки боевых магов 18+ (2 части)",
+        sub: "Безумные комбинации заклинаний и тотальный магический хаос",
+        cat: "board",
+        tag: "Экшен / 18+"
+      },
+      {
+        name: "Таверна «Красный Дракон» 18+ (4 части)",
+        sub: "Весёлые посиделки приключенцев после похода в подземелье",
+        cat: "board",
+        tag: "Вечеринка / Фэнтези"
+      },
+      {
+        name: "Соображарий (База, Герои, Супер, Игры, Картинки, Вечеринка)",
+        sub: "Скоростная битва эрудиции и реакции на каждую букву",
+        cat: "board",
+        tag: "Вечеринка"
+      },
+      {
+        name: "Гарри Поттер и Рик и Морти",
+        sub: "Тематические настольные игры по культовым вселенным",
+        cat: "board",
+        tag: "Приключения"
+      },
+      {
+        name: "Монополия, Клудомания, Городской убийца",
+        sub: "Проверенные временем настольные хиты для компании",
+        cat: "board",
+        tag: "Экономика / Детектив"
+      },
+      {
+        name: "Да, тёмный властелин! / Правда и действие",
+        sub: "Игры на импровизацию, отыгрыш и весёлые задания",
+        cat: "board",
+        tag: "Вечеринка"
+      },
+      {
+        name: "Уно, Совпадение, Падающая башня, Я бананчик, Индейцы, Три на три, Запретный остров",
+        sub: "Динамичные настолки для любого возраста и настроения",
+        cat: "board",
+        tag: "Быстрые / Кооператив"
+      },
+
+      // PS5 (ps5)
+      {
+        name: "Mortal Kombat 1 / Mortal Kombat 11 Ultimate",
+        sub: "Зрелищные поединки на большом экране для двоих и турниров",
+        cat: "ps5",
+        tag: "Файтинг"
+      },
+      {
+        name: "EA Sports FC (FIFA) / UFC 5",
+        sub: "Главные спортивные симуляторы для дружеских матчей на PS5",
+        cat: "ps5",
+        tag: "Спортсим"
+      },
+      {
+        name: "It Takes Two / A Way Out",
+        sub: "Лучшие сюжетные игры для совместного прохождения вдвоём",
+        cat: "ps5",
+        tag: "Кооператив"
+      },
+      {
+        name: "Человек-Паук 2 / God of War Ragnarök / Одни из нас",
+        sub: "Одиночные блокбастеры с кинематографичной графикой",
+        cat: "ps5",
+        tag: "Экшен / Приключения"
+      },
+
+      // VR (vr)
+      {
+        name: "Beat Saber",
+        sub: "Легендарная VR-игра: рубите неоновые кубы световыми мечами под музыку",
+        cat: "vr",
+        tag: "Ритм / Аркада"
+      },
+      {
+        name: "Half-Life: Alyx и сюжетные VR-миры",
+        sub: "Глубокое погружение в фантастические миры с полной интерактивностью",
+        cat: "vr",
+        tag: "Шутер / Приключения"
+      },
+      {
+        name: "VR-экшены, квесты и симуляторы",
+        sub: "Стрельба из лука, побег из комнат, американские горки и командные бои",
+        cat: "vr",
+        tag: "Экшен / Симулятор"
+      }
     ];
 
     /**************************************************************
@@ -1969,7 +2167,6 @@
       }
     }
 
-    // Звуковой движок (Web Audio API)
     let audioCtx = null;
     function getAudioCtx() {
       if (!audioCtx) {
@@ -2063,21 +2260,12 @@
           <div class="promo-code-display">${item.code}</div>
           <div class="promo-prophecy-mini">${item.title}</div>
           <div class="promo-actions">
-            <button class="btn-copy" onclick="copyPromoCode('${item.code}')">📋 Скопировать</button>
-            <button class="btn-redeem" onclick="openRedeemModal('${item.id}', '${item.code}')">🗑 Погасить (Админ)</button>
+            <button class="btn-redeem" onclick="openRedeemModal('${item.id}', '${item.code}')">✨ Применить промокод на стойке администратора</button>
           </div>
         </div>
       `
         )
         .join("");
-    }
-
-    function copyPromoCode(code) {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(code).catch(() => {});
-      }
-      triggerHaptic("light");
-      showToast(`Промокод ${code} скопирован!`);
     }
 
     function openRedeemModal(id, code) {
@@ -2099,7 +2287,7 @@
       renderPromos();
       closeRedeemModal();
       triggerHaptic("heavy");
-      showToast("Промокод успешно погашен и удалён!");
+      showToast("Промокод успешно применён!");
     });
 
     function setGameCategory(cat, btn) {
@@ -2118,7 +2306,8 @@
         const matchesText =
           !query ||
           g.name.toLowerCase().includes(query) ||
-          g.sub.toLowerCase().includes(query);
+          g.sub.toLowerCase().includes(query) ||
+          g.tag.toLowerCase().includes(query);
         return matchesCat && matchesText;
       });
 
@@ -2202,7 +2391,6 @@
       setTimeout(() => t.classList.remove("show"), 2400);
     }
 
-    // Запуск приложения
     window.addEventListener("DOMContentLoaded", () => {
       createBackgroundSparks();
       loadLocalState();
