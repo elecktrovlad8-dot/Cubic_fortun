@@ -4,11 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Игровой клуб «Настолка» — Кубик Судьбы D20</title>
-  <!-- Подключение официального SDK VK Bridge для работы внутри ВК -->
+  <!-- Официальный SDK VK Bridge -->
   <script src="https://unpkg.com/@vkontakte/vk-bridge/dist/browser.min.js"></script>
+  <!-- 3D-движок Three.js для реального физического 3D-кубика D20 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg-deep: #080610;
@@ -18,13 +20,13 @@
       --purple-glow: #c77dff;
       --purple-dark: #3c096c;
       --gold-main: #f3cf7a;
-      --gold-bright: #ffe8a3;
+      --gold-bright: #fff3c4;
       --gold-dark: #b58932;
       --cyan-vr: #00e5ff;
       --danger: #ff4d6d;
       --success: #2ec4b6;
       --text-main: #f8f5ff;
-      --text-muted: #a99ec2;
+      --text-muted: #b5aad0;
       --safe-top: env(safe-area-inset-top, 0px);
       --safe-bottom: env(safe-area-inset-bottom, 0px);
     }
@@ -40,7 +42,7 @@
     body {
       background-color: var(--bg-deep);
       background-image:
-        radial-gradient(circle at 50% 15%, rgba(157, 78, 221, 0.22) 0%, transparent 55%),
+        radial-gradient(circle at 50% 12%, rgba(157, 78, 221, 0.28) 0%, transparent 55%),
         radial-gradient(circle at 85% 80%, rgba(0, 229, 255, 0.08) 0%, transparent 40%),
         radial-gradient(circle at 15% 75%, rgba(243, 207, 122, 0.08) 0%, transparent 40%);
       color: var(--text-main);
@@ -48,7 +50,7 @@
       min-height: 100vh;
       overflow-x: hidden;
       padding-top: calc(12px + var(--safe-top));
-      padding-bottom: calc(88px + var(--safe-bottom));
+      padding-bottom: calc(92px + var(--safe-bottom));
     }
 
     /* Фоновые магические искры */
@@ -65,13 +67,13 @@
       height: 3px;
       border-radius: 50%;
       background: var(--gold-main);
-      opacity: 0.3;
+      opacity: 0.35;
       animation: floatUp linear infinite;
     }
     @keyframes floatUp {
       0% { transform: translateY(100vh) scale(0.5); opacity: 0; }
-      20% { opacity: 0.5; }
-      80% { opacity: 0.5; }
+      20% { opacity: 0.55; }
+      80% { opacity: 0.55; }
       100% { transform: translateY(-10vh) scale(1.3); opacity: 0; }
     }
 
@@ -80,19 +82,19 @@
       z-index: 1;
       max-width: 480px;
       margin: 0 auto;
-      padding: 0 16px;
+      padding: 0 14px;
     }
 
-    /* Шапка клуба */
+    /* ШАПКА КЛУБА — ВЫСОКАЯ КОНТРАСТНОСТЬ И ЧИТАЕМОСТЬ */
     .club-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: linear-gradient(145deg, rgba(28, 22, 53, 0.9), rgba(19, 15, 36, 0.95));
-      border: 1px solid rgba(243, 207, 122, 0.28);
+      background: linear-gradient(145deg, #21173b 0%, #120c24 100%);
+      border: 2px solid var(--gold-main);
       border-radius: 20px;
       padding: 12px 14px;
-      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.7), 0 0 18px rgba(157, 78, 221, 0.35);
       margin-bottom: 16px;
     }
 
@@ -103,17 +105,17 @@
     }
 
     .logo-box {
-      width: 52px;
-      height: 52px;
+      width: 56px;
+      height: 56px;
       border-radius: 50%;
-      border: 2px solid var(--gold-main);
-      background: radial-gradient(circle, #2b124c 0%, #0d0818 100%);
+      border: 2px solid var(--gold-bright);
+      background: radial-gradient(circle, #3b1966 0%, #0d0818 100%);
       display: flex;
       align-items: center;
       justify-content: center;
       overflow: hidden;
       flex-shrink: 0;
-      box-shadow: 0 0 15px rgba(157, 78, 221, 0.5);
+      box-shadow: 0 0 16px rgba(199, 125, 255, 0.65);
     }
 
     .logo-box img {
@@ -122,30 +124,38 @@
       object-fit: cover;
     }
 
-    .brand-text h1 {
-      font-size: 1.15rem;
-      font-weight: 800;
-      letter-spacing: 1px;
+    /* Чёткий, яркий и заметный заголовок НАСТОЛКА без прозрачного текста */
+    .brand-title {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.45rem;
+      font-weight: 900;
+      letter-spacing: 2px;
       text-transform: uppercase;
-      background: linear-gradient(180deg, #ffffff 0%, var(--gold-main) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      color: #fff6d6;
+      text-shadow:
+        0 2px 0 #2a0845,
+        0 3px 6px rgba(0, 0, 0, 0.95),
+        0 0 14px rgba(243, 207, 122, 0.75),
+        0 0 24px rgba(157, 78, 221, 0.6);
+      line-height: 1.05;
     }
 
     .brand-sub {
-      font-size: 0.65rem;
-      font-weight: 700;
-      letter-spacing: 0.6px;
+      font-size: 0.66rem;
+      font-weight: 800;
+      letter-spacing: 0.7px;
       text-transform: uppercase;
-      margin-top: 2px;
+      margin-top: 4px;
+      text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
     }
-    .brand-sub .t-board { color: var(--gold-main); }
-    .brand-sub .t-rpg { color: var(--purple-glow); }
-    .brand-sub .t-vr { color: var(--cyan-vr); }
+    .brand-sub .t-board { color: #ffe18d; }
+    .brand-sub .t-rpg { color: #e0aaff; }
+    .brand-sub .t-vr { color: #48cae4; }
 
     .brand-address {
-      font-size: 0.68rem;
-      color: var(--text-muted);
+      font-size: 0.72rem;
+      font-weight: 600;
+      color: #dfd6f5;
       margin-top: 3px;
       display: flex;
       align-items: center;
@@ -153,18 +163,19 @@
     }
 
     .sound-btn {
-      background: rgba(157, 78, 221, 0.15);
-      border: 1px solid rgba(199, 125, 255, 0.35);
+      background: rgba(157, 78, 221, 0.25);
+      border: 1.5px solid var(--gold-main);
       color: var(--text-main);
-      width: 38px;
-      height: 38px;
+      width: 40px;
+      height: 40px;
       border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      font-size: 1.1rem;
-      transition: all 0.2s ease;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+      transition: transform 0.15s ease;
     }
     .sound-btn:active {
       transform: scale(0.92);
@@ -173,7 +184,7 @@
     /* Вкладки */
     .tab-section {
       display: none;
-      animation: fadeIn 0.3s ease;
+      animation: fadeIn 0.28s ease;
     }
     .tab-section.active {
       display: block;
@@ -183,16 +194,16 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* Сцена с кубиком D20 */
+    /* Карточка со столом для 3D-броска */
     .altar-card {
-      background: linear-gradient(180deg, rgba(28, 22, 53, 0.85) 0%, rgba(14, 10, 26, 0.95) 100%);
-      border: 1px solid rgba(199, 125, 255, 0.25);
+      background: linear-gradient(180deg, rgba(31, 22, 58, 0.92) 0%, rgba(13, 9, 25, 0.98) 100%);
+      border: 1.5px solid rgba(243, 207, 122, 0.35);
       border-radius: 24px;
-      padding: 20px 16px 24px;
+      padding: 18px 14px 22px;
       text-align: center;
       position: relative;
       overflow: hidden;
-      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.65);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.75);
     }
 
     .altar-title {
@@ -200,17 +211,18 @@
       font-weight: 800;
       color: var(--gold-bright);
       text-transform: uppercase;
-      letter-spacing: 1px;
+      letter-spacing: 0.8px;
+      text-shadow: 0 2px 8px rgba(0, 0, 0, 0.8);
     }
 
     .altar-subtitle {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      margin-top: 4px;
-      line-height: 1.4;
+      font-size: 0.84rem;
+      color: #e6def7;
+      margin-top: 6px;
+      line-height: 1.45;
+      font-weight: 500;
     }
 
-    /* Шкала удачи */
     .luck-pill-bar {
       display: flex;
       justify-content: center;
@@ -219,152 +231,141 @@
       flex-wrap: wrap;
     }
     .luck-badge {
-      font-size: 0.68rem;
-      font-weight: 600;
-      padding: 4px 9px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 5px 10px;
       border-radius: 99px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      color: #ddd4f0;
     }
     .luck-badge.gold {
-      background: rgba(243, 207, 122, 0.12);
-      border-color: rgba(243, 207, 122, 0.4);
-      color: var(--gold-main);
+      background: rgba(243, 207, 122, 0.18);
+      border-color: var(--gold-main);
+      color: var(--gold-bright);
     }
 
-    /* Интерактивный D20 */
-    .d20-stage {
+    /* 3D ИГРОВОЕ ПОЛЕ (СТОЛ ДЛЯ БРОСКА КУБИКА) */
+    .dice-arena {
       position: relative;
-      width: 240px;
-      height: 240px;
-      margin: 18px auto 14px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      perspective: 900px;
+      width: 100%;
+      height: 300px;
+      margin: 14px auto;
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 50% 50%, rgba(123, 44, 191, 0.35) 0%, rgba(22, 12, 42, 0.92) 68%, #0a0614 100%);
+      border: 2px solid rgba(243, 207, 122, 0.45);
+      box-shadow:
+        inset 0 0 35px rgba(0, 0, 0, 0.9),
+        inset 0 0 20px rgba(157, 78, 221, 0.3),
+        0 8px 24px rgba(0, 0, 0, 0.6);
+      overflow: hidden;
       cursor: pointer;
+      touch-action: manipulation;
     }
 
-    /* Магическое кольцо позади кубика */
-    .magic-ring {
+    /* Декоративная разметка игрового стола внутри арены */
+    .arena-ring {
       position: absolute;
-      width: 225px;
-      height: 225px;
+      left: 50%;
+      top: 50%;
+      width: 230px;
+      height: 230px;
+      transform: translate(-50%, -50%);
       border-radius: 50%;
-      border: 1px dashed rgba(199, 125, 255, 0.35);
-      box-shadow: 0 0 40px rgba(157, 78, 221, 0.3), inset 0 0 30px rgba(157, 78, 221, 0.2);
-      animation: spinSlow 24s linear infinite;
+      border: 1px dashed rgba(243, 207, 122, 0.28);
       pointer-events: none;
     }
-    .magic-ring::after {
+    .arena-ring::before {
       content: '';
       position: absolute;
-      inset: 14px;
+      inset: 18px;
       border-radius: 50%;
-      border: 1px solid rgba(243, 207, 122, 0.2);
-    }
-    @keyframes spinSlow {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
+      border: 1px solid rgba(199, 125, 255, 0.2);
     }
 
-    .d20-wrapper {
-      position: relative;
-      width: 185px;
-      height: 185px;
-      transform-style: preserve-3d;
-      transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.3, 1.2);
-      filter: drop-shadow(0 12px 25px rgba(157, 78, 221, 0.55));
-      animation: idleFloat 3.5s ease-in-out infinite;
+    /* Волна удара о стол при отскоке 3D-кубика */
+    .bounce-ripple {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid var(--gold-bright);
+      transform: translate(-50%, -50%) scale(0.2);
+      opacity: 0.9;
+      pointer-events: none;
+      z-index: 2;
+      animation: rippleOut 0.48s ease-out forwards;
+    }
+    @keyframes rippleOut {
+      to {
+        transform: translate(-50%, -50%) scale(4.8);
+        opacity: 0;
+      }
     }
 
-    @keyframes idleFloat {
-      0%, 100% { transform: translateY(0px) rotate(0deg); }
-      50% { transform: translateY(-8px) rotate(2deg); }
-    }
-
-    .d20-wrapper.rolling {
-      animation: rollTumble 0.45s infinite linear !important;
-      filter: drop-shadow(0 0 35px rgba(199, 125, 255, 0.95)) drop-shadow(0 0 15px rgba(243, 207, 122, 0.8));
-    }
-
-    @keyframes rollTumble {
-      0%   { transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1.05); }
-      25%  { transform: rotateX(160deg) rotateY(90deg) rotateZ(75deg) scale(0.92); }
-      50%  { transform: rotateX(320deg) rotateY(210deg) rotateZ(180deg) scale(1.08); }
-      75%  { transform: rotateX(180deg) rotateY(300deg) rotateZ(270deg) scale(0.95); }
-      100% { transform: rotateX(360deg) rotateY(360deg) rotateZ(360deg) scale(1.05); }
-    }
-
-    .d20-wrapper.crit-hit {
-      animation: critPulse 0.7s cubic-bezier(0.17, 0.89, 0.32, 1.49);
-      filter: drop-shadow(0 0 40px rgba(243, 207, 122, 1)) drop-shadow(0 0 20px rgba(157, 78, 221, 0.9));
-    }
-
-    @keyframes critPulse {
-      0% { transform: scale(0.6) rotate(-15deg); }
-      60% { transform: scale(1.18) rotate(4deg); }
-      100% { transform: scale(1) rotate(0deg); }
-    }
-
-    .d20-svg {
+    #diceCanvasContainer {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
-      overflow: visible;
+      z-index: 3;
     }
 
-    .d20-number {
-      font-family: 'Cinzel', serif;
-      font-weight: 900;
-      font-size: 34px;
-      fill: url(#goldGrad);
-      text-anchor: middle;
-      dominant-baseline: central;
-      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.85));
+    /* Плашка текущего числа поверх арены (появляется после приземления для 100% читаемости) */
+    .landed-number-pill {
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 5;
+      background: rgba(14, 9, 28, 0.92);
+      border: 1.5px solid var(--gold-main);
+      color: var(--gold-bright);
+      padding: 4px 14px;
+      border-radius: 99px;
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.6px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.8);
+      pointer-events: none;
     }
 
-    /* Взрыв частиц при выпадении */
+    /* Взрыв частиц при финале броска */
     .burst-particle {
       position: absolute;
-      width: 7px;
-      height: 7px;
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       pointer-events: none;
-      z-index: 10;
+      z-index: 6;
     }
 
     /* Кнопка броска */
     .roll-btn {
       width: 100%;
-      max-width: 310px;
+      max-width: 320px;
       padding: 16px 24px;
       border-radius: 16px;
-      border: 1px solid var(--gold-bright);
-      background: linear-gradient(135deg, #7b2cbf 0%, #5a189a 50%, #3c096c 100%);
-      color: #fff;
+      border: 2px solid var(--gold-bright);
+      background: linear-gradient(135deg, #9d4edd 0%, #5a189a 55%, #3c096c 100%);
+      color: #ffffff;
       font-family: 'Montserrat', sans-serif;
-      font-size: 1rem;
-      font-weight: 800;
+      font-size: 1.02rem;
+      font-weight: 900;
       text-transform: uppercase;
       letter-spacing: 1px;
+      text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
       cursor: pointer;
-      box-shadow: 0 8px 25px rgba(123, 44, 191, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      box-shadow: 0 8px 25px rgba(123, 44, 191, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.35);
       transition: all 0.2s ease;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .roll-btn:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 30px rgba(157, 78, 221, 0.75);
     }
     .roll-btn:active:not(:disabled) {
       transform: scale(0.97);
     }
     .roll-btn:disabled {
       background: #231d36;
-      border-color: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.16);
       color: var(--text-muted);
       box-shadow: none;
       cursor: not-allowed;
@@ -372,9 +373,9 @@
 
     .cooldown-box {
       margin-top: 12px;
-      font-size: 0.78rem;
-      color: var(--gold-main);
-      font-weight: 600;
+      font-size: 0.8rem;
+      color: var(--gold-bright);
+      font-weight: 700;
       display: none;
     }
     .cooldown-box.visible {
@@ -384,13 +385,13 @@
     /* Карточка результата броска */
     .result-panel {
       margin-top: 18px;
-      background: linear-gradient(160deg, rgba(35, 25, 66, 0.95), rgba(18, 13, 36, 0.98));
-      border: 1px solid rgba(243, 207, 122, 0.35);
+      background: linear-gradient(160deg, rgba(38, 27, 72, 0.96), rgba(18, 13, 36, 0.99));
+      border: 1.5px solid var(--gold-main);
       border-radius: 20px;
       padding: 18px 16px;
       text-align: left;
       display: none;
-      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.65);
     }
     .result-panel.show {
       display: block;
@@ -411,27 +412,27 @@
 
     .roll-tier-badge {
       display: inline-block;
-      padding: 4px 10px;
+      padding: 5px 11px;
       border-radius: 8px;
-      font-size: 0.7rem;
+      font-size: 0.74rem;
       font-weight: 800;
       text-transform: uppercase;
       letter-spacing: 0.6px;
     }
-    .tier-fail { background: rgba(255, 77, 109, 0.2); color: #ff758f; border: 1px solid rgba(255, 77, 109, 0.4); }
-    .tier-normal { background: rgba(157, 78, 221, 0.2); color: #e0aaff; border: 1px solid rgba(157, 78, 221, 0.4); }
-    .tier-high { background: rgba(0, 229, 255, 0.15); color: #72efdd; border: 1px solid rgba(0, 229, 255, 0.4); }
-    .tier-legend { background: rgba(243, 207, 122, 0.2); color: var(--gold-bright); border: 1px solid var(--gold-main); }
+    .tier-fail { background: rgba(255, 77, 109, 0.22); color: #ff8fa3; border: 1px solid rgba(255, 77, 109, 0.5); }
+    .tier-normal { background: rgba(157, 78, 221, 0.25); color: #e0aaff; border: 1px solid rgba(199, 125, 255, 0.5); }
+    .tier-high { background: rgba(0, 229, 255, 0.18); color: #72efdd; border: 1px solid rgba(0, 229, 255, 0.5); }
+    .tier-legend { background: rgba(243, 207, 122, 0.25); color: var(--gold-bright); border: 1px solid var(--gold-main); }
 
     .result-title {
-      font-size: 1.05rem;
+      font-size: 1.08rem;
       font-weight: 800;
       color: var(--gold-bright);
       margin-bottom: 6px;
     }
 
     .result-prophecy {
-      font-size: 0.85rem;
+      font-size: 0.86rem;
       line-height: 1.5;
       color: var(--text-main);
     }
@@ -439,8 +440,8 @@
     .result-game-rec {
       margin-top: 10px;
       padding-top: 10px;
-      border-top: 1px dashed rgba(255, 255, 255, 0.12);
-      font-size: 0.76rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.16);
+      font-size: 0.78rem;
       color: var(--text-muted);
     }
     .result-game-rec strong {
@@ -450,8 +451,8 @@
     /* Блок выпавшего промокода */
     .loot-promo-box {
       margin-top: 14px;
-      background: linear-gradient(135deg, rgba(243, 207, 122, 0.16), rgba(157, 78, 221, 0.25));
-      border: 1.5px solid var(--gold-main);
+      background: linear-gradient(135deg, rgba(243, 207, 122, 0.2), rgba(157, 78, 221, 0.28));
+      border: 2px solid var(--gold-main);
       border-radius: 14px;
       padding: 12px 14px;
       text-align: center;
@@ -461,7 +462,7 @@
       display: block;
     }
     .loot-discount-label {
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 800;
       text-transform: uppercase;
       color: var(--gold-bright);
@@ -469,33 +470,33 @@
     }
     .loot-code-value {
       font-family: monospace;
-      font-size: 1.15rem;
-      font-weight: 800;
+      font-size: 1.18rem;
+      font-weight: 900;
       letter-spacing: 1.5px;
       color: #fff;
-      background: rgba(0, 0, 0, 0.45);
-      padding: 8px 12px;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 9px 12px;
       border-radius: 10px;
       margin: 8px 0 6px;
-      border: 1px dashed rgba(243, 207, 122, 0.5);
+      border: 1px dashed var(--gold-main);
       user-select: all;
     }
     .loot-saved-hint {
-      font-size: 0.7rem;
-      color: var(--text-muted);
+      font-size: 0.72rem;
+      color: #e2d9f3;
     }
 
     /* ВКЛАДКА 2: ИНВЕНТАРЬ ПРОМОКОДОВ */
     .section-card {
-      background: linear-gradient(180deg, rgba(28, 22, 53, 0.85) 0%, rgba(14, 10, 26, 0.95) 100%);
-      border: 1px solid rgba(199, 125, 255, 0.25);
+      background: linear-gradient(180deg, rgba(28, 22, 53, 0.9) 0%, rgba(14, 10, 26, 0.98) 100%);
+      border: 1.5px solid rgba(199, 125, 255, 0.3);
       border-radius: 24px;
       padding: 20px 16px;
       margin-bottom: 16px;
     }
 
     .section-heading {
-      font-size: 1.1rem;
+      font-size: 1.12rem;
       font-weight: 800;
       color: var(--gold-bright);
       margin-bottom: 6px;
@@ -505,7 +506,7 @@
     }
 
     .section-desc {
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--text-muted);
       line-height: 1.45;
       margin-bottom: 16px;
@@ -518,8 +519,8 @@
     }
 
     .promo-item {
-      background: linear-gradient(145deg, rgba(38, 27, 71, 0.9), rgba(20, 15, 39, 0.95));
-      border: 1px solid rgba(243, 207, 122, 0.4);
+      background: linear-gradient(145deg, rgba(38, 27, 71, 0.95), rgba(20, 15, 39, 0.98));
+      border: 1.5px solid rgba(243, 207, 122, 0.45);
       border-radius: 18px;
       padding: 14px;
       position: relative;
@@ -543,17 +544,17 @@
     }
 
     .promo-date {
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       color: var(--text-muted);
     }
 
     .promo-code-display {
       font-family: monospace;
-      font-size: 1.1rem;
-      font-weight: 800;
+      font-size: 1.12rem;
+      font-weight: 900;
       color: #fff;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px dashed rgba(199, 125, 255, 0.45);
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px dashed rgba(199, 125, 255, 0.5);
       border-radius: 10px;
       padding: 10px;
       text-align: center;
@@ -563,7 +564,7 @@
     }
 
     .promo-prophecy-mini {
-      font-size: 0.75rem;
+      font-size: 0.76rem;
       color: var(--text-muted);
       margin-bottom: 12px;
       line-height: 1.35;
@@ -579,7 +580,7 @@
       padding: 10px 12px;
       border-radius: 10px;
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.75rem;
+      font-size: 0.76rem;
       font-weight: 700;
       cursor: pointer;
       border: none;
@@ -589,13 +590,13 @@
       transform: scale(0.96);
     }
     .btn-copy {
-      background: rgba(157, 78, 221, 0.2);
-      border: 1px solid rgba(199, 125, 255, 0.4);
+      background: rgba(157, 78, 221, 0.25);
+      border: 1px solid rgba(199, 125, 255, 0.45);
       color: var(--text-main);
     }
     .btn-redeem {
-      background: rgba(255, 77, 109, 0.16);
-      border: 1px solid rgba(255, 77, 109, 0.45);
+      background: rgba(255, 77, 109, 0.18);
+      border: 1px solid rgba(255, 77, 109, 0.5);
       color: #ff8fa3;
     }
 
@@ -604,9 +605,9 @@
       padding: 28px 14px;
       color: var(--text-muted);
       font-size: 0.85rem;
-      background: rgba(255, 255, 255, 0.02);
+      background: rgba(255, 255, 255, 0.03);
       border-radius: 16px;
-      border: 1px dashed rgba(255, 255, 255, 0.1);
+      border: 1px dashed rgba(255, 255, 255, 0.15);
     }
 
     /* ВКЛАДКА 3: О КЛУБЕ И КАТАЛОГ ИГР */
@@ -617,8 +618,8 @@
       margin-bottom: 18px;
     }
     .feature-box {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 14px;
       padding: 12px;
       display: flex;
@@ -644,8 +645,8 @@
       width: 100%;
       padding: 12px 14px;
       border-radius: 12px;
-      background: rgba(0, 0, 0, 0.4);
-      border: 1px solid rgba(199, 125, 255, 0.35);
+      background: rgba(0, 0, 0, 0.45);
+      border: 1px solid rgba(199, 125, 255, 0.4);
       color: var(--text-main);
       font-family: 'Montserrat', sans-serif;
       font-size: 0.85rem;
@@ -672,14 +673,14 @@
       font-size: 0.72rem;
       font-weight: 700;
       white-space: nowrap;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.14);
       color: var(--text-muted);
       cursor: pointer;
     }
     .chip.active {
       background: var(--purple-neon);
-      border-color: var(--purple-glow);
+      border-color: var(--gold-main);
       color: #fff;
     }
 
@@ -692,8 +693,8 @@
       padding-right: 4px;
     }
     .game-card {
-      background: rgba(255, 255, 255, 0.03);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 12px;
       padding: 10px 12px;
       display: flex;
@@ -703,7 +704,7 @@
     }
     .game-name {
       font-size: 0.82rem;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--text-main);
     }
     .game-sub {
@@ -716,8 +717,8 @@
       font-weight: 700;
       padding: 3px 8px;
       border-radius: 6px;
-      background: rgba(157, 78, 221, 0.18);
-      color: var(--purple-glow);
+      background: rgba(157, 78, 221, 0.22);
+      color: #e0aaff;
       white-space: nowrap;
     }
 
@@ -727,9 +728,9 @@
       bottom: 0;
       left: 0;
       right: 0;
-      background: rgba(13, 10, 24, 0.94);
+      background: rgba(13, 10, 24, 0.96);
       backdrop-filter: blur(14px);
-      border-top: 1px solid rgba(243, 207, 122, 0.22);
+      border-top: 1.5px solid rgba(243, 207, 122, 0.28);
       padding: 8px 16px calc(8px + var(--safe-bottom));
       z-index: 50;
     }
@@ -751,7 +752,7 @@
       padding: 6px 4px;
       border-radius: 12px;
       font-family: 'Montserrat', sans-serif;
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 700;
       cursor: pointer;
       position: relative;
@@ -762,7 +763,7 @@
     }
     .nav-btn.active {
       color: var(--gold-bright);
-      background: rgba(157, 78, 221, 0.18);
+      background: rgba(157, 78, 221, 0.24);
     }
     .badge-count {
       position: absolute;
@@ -788,7 +789,7 @@
     .modal-overlay {
       position: fixed;
       inset: 0;
-      background: rgba(5, 3, 10, 0.82);
+      background: rgba(5, 3, 10, 0.85);
       backdrop-filter: blur(6px);
       z-index: 100;
       display: none;
@@ -801,13 +802,13 @@
     }
     .modal-box {
       background: linear-gradient(160deg, #1f1738, #110c21);
-      border: 1.5px solid var(--gold-main);
+      border: 2px solid var(--gold-main);
       border-radius: 22px;
       max-width: 360px;
       width: 100%;
       padding: 22px 18px;
       text-align: center;
-      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.8);
+      box-shadow: 0 15px 45px rgba(0, 0, 0, 0.85);
     }
     .modal-title {
       font-size: 1.05rem;
@@ -824,9 +825,9 @@
     .modal-code-preview {
       font-family: monospace;
       font-size: 1.05rem;
-      font-weight: 800;
+      font-weight: 900;
       color: #fff;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.5);
       padding: 8px;
       border-radius: 8px;
       margin-bottom: 16px;
@@ -847,7 +848,7 @@
       border: none;
     }
     .modal-btn.cancel {
-      background: rgba(255, 255, 255, 0.08);
+      background: rgba(255, 255, 255, 0.1);
       color: var(--text-main);
     }
     .modal-btn.confirm {
@@ -861,16 +862,16 @@
       top: calc(16px + var(--safe-top));
       left: 50%;
       transform: translateX(-50%) translateY(-80px);
-      background: rgba(20, 15, 38, 0.96);
-      border: 1px solid var(--gold-main);
+      background: rgba(20, 15, 38, 0.98);
+      border: 1.5px solid var(--gold-main);
       color: var(--gold-bright);
       padding: 10px 18px;
       border-radius: 99px;
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       font-weight: 700;
       z-index: 200;
       transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.7);
       white-space: nowrap;
     }
     .toast.show {
@@ -887,19 +888,18 @@
   <div class="toast" id="toastMsg">Скопировано!</div>
 
   <div class="app-container">
-    <!-- Шапка клуба -->
+    <!-- Шапка клуба с ярким контрастным названием НАСТОЛКА -->
     <header class="club-header">
       <div class="brand-wrap">
         <div class="logo-box">
-          <!-- Если положить рядом файл logo.webp, он отобразится автоматически -->
           <img src="logo.webp" alt="Настолка" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-          <svg style="display:none; width:34px; height:34px;" viewBox="0 0 100 100">
-            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#4a154b" stroke="#f3cf7a" stroke-width="4"/>
-            <text x="50" y="54" fill="#f3cf7a" font-family="Cinzel, serif" font-weight="900" font-size="32" text-anchor="middle" dominant-baseline="central">20</text>
+          <svg style="display:none; width:38px; height:38px;" viewBox="0 0 100 100">
+            <polygon points="50,5 93,28 93,72 50,95 7,72 7,28" fill="#4a154b" stroke="#fff3c4" stroke-width="5"/>
+            <text x="50" y="53" fill="#fff3c4" font-family="Montserrat, sans-serif" font-weight="900" font-size="34" text-anchor="middle" dominant-baseline="central">20</text>
           </svg>
         </div>
-        <div class="brand-text">
-          <h1>НАСТОЛКА</h1>
+        <div>
+          <div class="brand-title">НАСТОЛКА</div>
           <div class="brand-sub">
             <span class="t-board">НАСТОЛЬНЫЕ</span> •
             <span class="t-rpg">РОЛЕВЫЕ</span> •
@@ -911,12 +911,12 @@
       <button class="sound-btn" id="soundToggle" title="Звук">🔊</button>
     </header>
 
-    <!-- ВКЛАДКА 1: КУБИК СУДЬБЫ D20 -->
+    <!-- ВКЛАДКА 1: 3D-КУБИК СУДЬБЫ D20 -->
     <section class="tab-section active" id="tab-dice">
       <div class="altar-card">
         <div class="altar-title" id="greetingTitle">Испытай благосклонность кубов</div>
         <p class="altar-subtitle">
-          Бросай двадцатигранник раз в день: получи RPG-пророчество на партию и шанс выбить редкую скидку <strong>от 5% до 20%</strong>!
+          Бросай двадцатигранник раз в день: получи RPG-пророчество или редкий шанс выбить скидку от 5% до 20%!
         </p>
 
         <div class="luck-pill-bar">
@@ -924,73 +924,15 @@
           <span class="luck-badge gold">17–20 • Скидки 5%–20% + Пророчество</span>
         </div>
 
-        <!-- Сцена с 20-гранным кубиком -->
-        <div class="d20-stage" id="d20Stage" onclick="handleRollClick()">
-          <div class="magic-ring"></div>
-          <div class="d20-wrapper" id="d20Wrapper">
-            <svg class="d20-svg" viewBox="0 0 200 200">
-              <defs>
-                <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#7b2cbf" />
-                  <stop offset="50%" stop-color="#3c096c" />
-                  <stop offset="100%" stop-color="#19002e" />
-                </linearGradient>
-                <linearGradient id="facetLight" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="rgba(199, 125, 255, 0.45)" />
-                  <stop offset="100%" stop-color="rgba(60, 9, 108, 0.1)" />
-                </linearGradient>
-                <linearGradient id="facetDark" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="rgba(16, 0, 43, 0.55)" />
-                  <stop offset="100%" stop-color="rgba(157, 78, 221, 0.15)" />
-                </linearGradient>
-                <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-                  <stop offset="0%" stop-color="#ffffff" />
-                  <stop offset="45%" stop-color="#ffe8a3" />
-                  <stop offset="100%" stop-color="#d49b35" />
-                </linearGradient>
-              </defs>
-
-              <!-- Внешний контур икосаэдра (D20) -->
-              <polygon points="100,10 182,55 182,145 100,190 18,145 18,55"
-                       fill="url(#bodyGrad)" stroke="#f3cf7a" stroke-width="3" stroke-linejoin="round" />
-
-              <!-- Верхние и боковые грани D20 -->
-              <polygon points="100,10 52,65 148,65" fill="url(#facetLight)" stroke="#c77dff" stroke-width="1.5" />
-              <polygon points="100,10 18,55 52,65" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
-              <polygon points="100,10 148,65 182,55" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
-
-              <polygon points="18,55 52,65 36,128" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
-              <polygon points="18,55 36,128 18,145" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
-
-              <polygon points="182,55 148,65 164,128" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
-              <polygon points="182,55 164,128 182,145" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
-
-              <!-- Нижние грани -->
-              <polygon points="52,65 100,148 36,128" fill="url(#facetDark)" stroke="#c77dff" stroke-width="1.5" />
-              <polygon points="148,65 100,148 164,128" fill="url(#facetDark)" stroke="#c77dff" stroke-width="1.5" />
-              <polygon points="36,128 100,148 100,190" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
-              <polygon points="164,128 100,148 100,190" fill="url(#facetLight)" stroke="#9d4edd" stroke-width="1.4" />
-              <polygon points="18,145 36,128 100,190" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
-              <polygon points="182,145 164,128 100,190" fill="url(#facetDark)" stroke="#9d4edd" stroke-width="1.4" />
-
-              <!-- Центральная грань со значением -->
-              <polygon points="52,65 148,65 100,148"
-                       fill="rgba(45, 14, 79, 0.85)" stroke="#f3cf7a" stroke-width="2.4" stroke-linejoin="round" />
-
-              <!-- Декоративные руны на боковых гранях -->
-              <text x="100" y="45" fill="rgba(243,207,122,0.45)" font-size="11" font-weight="700" text-anchor="middle">✦</text>
-              <text x="48" y="102" fill="rgba(199,125,255,0.5)" font-size="11" font-weight="700" text-anchor="middle">◈</text>
-              <text x="152" y="102" fill="rgba(199,125,255,0.5)" font-size="11" font-weight="700" text-anchor="middle">◈</text>
-              <text x="100" y="172" fill="rgba(243,207,122,0.45)" font-size="10" font-weight="700" text-anchor="middle">VIII</text>
-
-              <!-- Главная цифра броска -->
-              <text x="100" y="96" class="d20-number" id="d20FaceText">20</text>
-            </svg>
-          </div>
+        <!-- 3D-АРЕНА ДЛЯ ФИЗИЧЕСКОГО БРОСКА КУБИКА -->
+        <div class="dice-arena" id="diceArena" onclick="handleRollClick()">
+          <div class="arena-ring"></div>
+          <div id="diceCanvasContainer"></div>
+          <div class="landed-number-pill" id="landedNumberPill">Грань D20: 20 • Нажми, чтобы бросить</div>
         </div>
 
         <button class="roll-btn" id="rollBtn" onclick="handleRollClick()">
-          🎲 Бросить кубик D20
+          🎲 Бросить 3D-кубик D20
         </button>
 
         <div class="cooldown-box" id="cooldownBox">
@@ -1000,8 +942,8 @@
         <!-- Панель результата -->
         <div class="result-panel" id="resultPanel">
           <div class="result-header">
-            <span class="roll-tier-badge tier-normal" id="resBadge">Значение: 20</span>
-            <span style="font-size: 0.75rem; color: var(--text-muted);" id="resLuckPercent">Удача: 100%</span>
+            <span class="roll-tier-badge tier-normal" id="resBadge">Грань D20: 20</span>
+            <span style="font-size: 0.76rem; color: var(--text-muted); font-weight: 700;" id="resLuckPercent">Удача: 100%</span>
           </div>
           <div class="result-title" id="resTitle">Критический успех!</div>
           <div class="result-prophecy" id="resProphecy"></div>
@@ -1026,7 +968,7 @@
           <span>🎒 Ваши промокоды</span>
         </div>
         <p class="section-desc">
-          Покажите сохранённый промокод администратору в клубе <strong>«Настолка» (Шипиловский проезд 49/1)</strong>. При применении скидки администратор попросит вас нажать кнопку «Погасить и удалить».
+          Покажите сохранённый промокод администратору в клубе <strong>«Настолка» (Шипиловский проезд 49/1)</strong>. При применении скидки администратор попросит вас нажать кнопку «Погасить (Админ)».
         </p>
 
         <div class="promo-list" id="promoList"></div>
@@ -1120,7 +1062,7 @@
 
   <script>
     /**************************************************************
-     * 1. БАЗА ПРОРОЧЕСТВ D20 И НАСТРОЙКА РЕДКОСТИ СКИДОК (5%-20%)
+     * 1. БАЗА ПРОРОЧЕСТВ D20 И РЕДКИЕ СКИДКИ (5%-20%)
      **************************************************************/
     const D20_OUTCOMES = {
       1: {
@@ -1269,27 +1211,401 @@
       }
     };
 
-    /**
-     * Функция взвешенного выбора грани D20:
-     * Скидки (17, 18, 19, 20) падают редко (суммарный шанс ~16%):
-     * - 20 (скидка 20%): 1.5%
-     * - 19 (скидка 15%): 3.0%
-     * - 18 (скидка 10%): 5.0%
-     * - 17 (скидка 5%):  6.5%
-     * - 1..16 (предсказания без скидки): 84% (равномерно по 5.25% на грань)
-     */
+    // Взвешенная вероятность (скидки 5–20% выпадают редко)
     function getWeightedD20Roll() {
       const r = Math.random() * 100;
-      if (r < 1.5) return 20;            // 1.5% шанс на 20% скидку
-      if (r < 4.5) return 19;            // 3.0% шанс на 15% скидку
-      if (r < 9.5) return 18;            // 5.0% шанс на 10% скидку
-      if (r < 16.0) return 17;           // 6.5% шанс на 5% скидку
-      // Остальные 84% распределяются между гранями 1..16
+      if (r < 1.5) return 20;            // 1.5% — скидка 20%
+      if (r < 4.5) return 19;            // 3.0% — скидка 15%
+      if (r < 9.5) return 18;            // 5.0% — скидка 10%
+      if (r < 16.0) return 17;           // 6.5% — скидка 5%
       return Math.floor(Math.random() * 16) + 1;
     }
 
     /**************************************************************
-     * 2. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА»
+     * 2. НАСТОЯЩИЙ 3D-ДВИЖОК КУБИКА D20 (THREE.JS + ФИЗИКА ПРЫЖКОВ)
+     **************************************************************/
+    let scene, camera, renderer, d20Mesh, shadowMesh;
+    let faceTargetQuaternions = {}; // Кватернионы поворота для каждой грани 1..20
+    let isRolling = false;
+    let idleRotationEnabled = true;
+
+    // Генерация супер-чёткой текстуры для каждой треугольной грани (1..20)
+    function createFaceTexture(number) {
+      const canvas = document.createElement("canvas");
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext("2d");
+
+      // Координаты равностороннего треугольника на текстуре
+      const x0 = 256, y0 = 36;
+      const x1 = 36,  y1 = 430;
+      const x2 = 476, y2 = 430;
+
+      // Глубокий фиолетовый фон
+      const bgGrad = ctx.createRadialGradient(256, 285, 20, 256, 285, 260);
+      if (number >= 17) {
+        bgGrad.addColorStop(0, "#6c1d9e");
+        bgGrad.addColorStop(0.65, "#3b0a63");
+        bgGrad.addColorStop(1, "#19032e");
+      } else {
+        bgGrad.addColorStop(0, "#521680");
+        bgGrad.addColorStop(0.7, "#2d094d");
+        bgGrad.addColorStop(1, "#140226");
+      }
+      ctx.fillStyle = bgGrad;
+      ctx.fillRect(0, 0, 512, 512);
+
+      // Внутренняя золотая рамка грани
+      ctx.beginPath();
+      ctx.moveTo(x0, y0 + 18);
+      ctx.lineTo(x1 + 18, y1 - 12);
+      ctx.lineTo(x2 - 18, y2 - 12);
+      ctx.closePath();
+      ctx.strokeStyle = number === 20 ? "#ffe8a3" : "rgba(243, 207, 122, 0.65)";
+      ctx.lineWidth = 8;
+      ctx.stroke();
+
+      // Крупная и максимально контрастная цифра в центре тяжести треугольника (256, 298)
+      const cx = 256;
+      const cy = 298;
+      ctx.font = "900 156px 'Montserrat', sans-serif";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+
+      // Чёрный глубокий контур вокруг цифры, чтобы текст читался под любым углом
+      ctx.lineJoin = "round";
+      ctx.lineWidth = 24;
+      ctx.strokeStyle = "#090214";
+      ctx.strokeText(String(number), cx, cy);
+
+      // Яркая золотисто-белая заливка цифры
+      const textGrad = ctx.createLinearGradient(cx, cy - 75, cx, cy + 75);
+      if (number >= 17) {
+        textGrad.addColorStop(0, "#ffffff");
+        textGrad.addColorStop(0.5, "#fff0b8");
+        textGrad.addColorStop(1, "#f3cf7a");
+      } else {
+        textGrad.addColorStop(0, "#ffffff");
+        textGrad.addColorStop(0.6, "#f8f0ff");
+        textGrad.addColorStop(1, "#ffd97d");
+      }
+      ctx.fillStyle = textGrad;
+      ctx.fillText(String(number), cx, cy);
+
+      // Подчёркивание для 6 и 9, чтобы их никогда не путали
+      if (number === 6 || number === 9) {
+        ctx.beginPath();
+        ctx.moveTo(cx - 42, cy + 86);
+        ctx.lineTo(cx + 42, cy + 86);
+        ctx.lineWidth = 16;
+        ctx.strokeStyle = "#090214";
+        ctx.stroke();
+        ctx.lineWidth = 10;
+        ctx.strokeStyle = "#ffe8a3";
+        ctx.stroke();
+      }
+
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.anisotropy = 4;
+      return texture;
+    }
+
+    function init3DDiceScene() {
+      const container = document.getElementById("diceCanvasContainer");
+      const width = container.clientWidth || 340;
+      const height = container.clientHeight || 300;
+
+      scene = new THREE.Scene();
+
+      // Перспективная камера смотрит сверху на игровой стол
+      camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 100);
+      camera.position.set(0, 0, 7.6);
+      camera.lookAt(0, 0, 0);
+
+      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      container.innerHTML = "";
+      container.appendChild(renderer.domElement);
+
+      // Освещение для 3D-граней
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.88);
+      scene.add(ambientLight);
+
+      const topLight = new THREE.DirectionalLight(0xfff3c4, 0.95);
+      topLight.position.set(3, 5, 7);
+      scene.add(topLight);
+
+      const purpleRimLight = new THREE.PointLight(0xc77dff, 1.1, 15);
+      purpleRimLight.position.set(-4, -3, 4);
+      scene.add(purpleRimLight);
+
+      // Мягкая круглая тень под кубиком на столе
+      const shadowCanvas = document.createElement("canvas");
+      shadowCanvas.width = 128;
+      shadowCanvas.height = 128;
+      const sCtx = shadowCanvas.getContext("2d");
+      const sGrad = sCtx.createRadialGradient(64, 64, 8, 64, 64, 60);
+      sGrad.addColorStop(0, "rgba(0, 0, 0, 0.78)");
+      sGrad.addColorStop(0.6, "rgba(20, 5, 40, 0.4)");
+      sGrad.addColorStop(1, "rgba(0, 0, 0, 0)");
+      sCtx.fillStyle = sGrad;
+      sCtx.fillRect(0, 0, 128, 128);
+
+      const shadowTex = new THREE.CanvasTexture(shadowCanvas);
+      const shadowGeo = new THREE.PlaneGeometry(3.1, 3.1);
+      const shadowMat = new THREE.MeshBasicMaterial({
+        map: shadowTex,
+        transparent: true,
+        depthWrite: false
+      });
+      shadowMesh = new THREE.Mesh(shadowGeo, shadowMat);
+      shadowMesh.position.set(0, -0.15, -0.9);
+      scene.add(shadowMesh);
+
+      // Создаём 20-гранник (IcosahedronGeometry)
+      const radius = 1.48;
+      const rawGeo = new THREE.IcosahedronGeometry(radius, 0);
+      const geo = rawGeo.index ? rawGeo.toNonIndexed() : rawGeo;
+
+      const posAttr = geo.attributes.position;
+      const uvs = [];
+
+      // UV-координаты для треугольника на 512x512 текстуре:
+      // вершина V0 -> верх (0.5, 0.93), V1 -> левый низ (0.07, 0.16), V2 -> правый низ (0.93, 0.16)
+      for (let f = 0; f < 20; f++) {
+        uvs.push(0.5, 0.93, 0.07, 0.16, 0.93, 0.16);
+      }
+      geo.setAttribute("uv", new THREE.Float32BufferAttribute(uvs, 2));
+
+      geo.clearGroups();
+      const materials = [];
+
+      for (let f = 0; f < 20; f++) {
+        const faceNumber = f + 1;
+        geo.addGroup(f * 3, 3, f);
+
+        const tex = createFaceTexture(faceNumber);
+        materials.push(
+          new THREE.MeshStandardMaterial({
+            map: tex,
+            roughness: 0.28,
+            metalness: 0.18
+          })
+        );
+
+        // Вычисляем точный кватернион для этой грани, чтобы после броска она смотрела прямо в камеру (+Z) и стояла ровно
+        const v0 = new THREE.Vector3().fromBufferAttribute(posAttr, f * 3 + 0);
+        const v1 = new THREE.Vector3().fromBufferAttribute(posAttr, f * 3 + 1);
+        const v2 = new THREE.Vector3().fromBufferAttribute(posAttr, f * 3 + 2);
+
+        const normalLocal = new THREE.Vector3()
+          .addVectors(v0, v1)
+          .add(v2)
+          .normalize();
+        const midBottom = new THREE.Vector3().addVectors(v1, v2).multiplyScalar(0.5);
+        const upLocal = new THREE.Vector3().subVectors(v0, midBottom).normalize();
+        const rightLocal = new THREE.Vector3().crossVectors(upLocal, normalLocal).normalize();
+        upLocal.crossVectors(normalLocal, rightLocal).normalize();
+
+        // Матрица базиса переводит локальные векторы грани (right, up, normal) в оси экрана (X, Y, Z)
+        const basisMatrix = new THREE.Matrix4().makeBasis(rightLocal, upLocal, normalLocal);
+        basisMatrix.transpose();
+        const targetQuat = new THREE.Quaternion().setFromRotationMatrix(basisMatrix);
+        faceTargetQuaternions[faceNumber] = targetQuat;
+      }
+
+      d20Mesh = new THREE.Mesh(geo, materials);
+
+      // Золотые 3D-рёбра поверх граней икосаэдра
+      const edgesGeo = new THREE.EdgesGeometry(geo, 1);
+      const edgesMat = new THREE.LineBasicMaterial({
+        color: 0xf3cf7a,
+        transparent: true,
+        opacity: 0.85
+      });
+      const edgesMesh = new THREE.LineSegments(edgesGeo, edgesMat);
+      edgesMesh.scale.setScalar(1.003);
+      d20Mesh.add(edgesMesh);
+
+      // Устанавливаем стартовую грань (20 или сохранённую за сегодня)
+      const initialFace = appState.lastRollValue || 20;
+      if (faceTargetQuaternions[initialFace]) {
+        d20Mesh.quaternion.copy(faceTargetQuaternions[initialFace]);
+      }
+
+      scene.add(d20Mesh);
+
+      window.addEventListener("resize", () => {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        if (w && h) {
+          camera.aspect = w / h;
+          camera.updateProjectionMatrix();
+          renderer.setSize(w, h);
+        }
+      });
+
+      // Цикл плавного рендера
+      function renderLoop(time) {
+        requestAnimationFrame(renderLoop);
+        if (!isRolling && idleRotationEnabled && d20Mesh) {
+          // Лёгкое живое покачивание кубика, чтобы цифры всегда оставались перед глазами
+          const targetFace = appState.lastRollValue || 20;
+          const baseQuat = faceTargetQuaternions[targetFace];
+          if (baseQuat) {
+            const wobble = new THREE.Quaternion().setFromEuler(
+              new THREE.Euler(
+                Math.sin(time * 0.0018) * 0.12,
+                Math.cos(time * 0.0014) * 0.16,
+                Math.sin(time * 0.0011) * 0.05
+              )
+            );
+            d20Mesh.quaternion.copy(baseQuat).multiply(wobble);
+          }
+        }
+        renderer.render(scene, camera);
+      }
+      requestAnimationFrame(renderLoop);
+    }
+
+    // Волна на столе в точке приземления кубика
+    function spawnBounceRipple(worldX, worldY) {
+      const arena = document.getElementById("diceArena");
+      const ripple = document.createElement("div");
+      ripple.className = "bounce-ripple";
+      // Переводим мировые координаты стола (-1.5..1.5) в проценты арены
+      const pctX = 50 + (worldX / 2.2) * 38;
+      const pctY = 50 - (worldY / 1.8) * 38;
+      ripple.style.left = `${pctX}%`;
+      ripple.style.top = `${pctY}%`;
+      arena.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 500);
+    }
+
+    // Полноценная 3D-анимация броска с подбрасыванием, полётом, отскоками от стола и остановкой на нужной грани
+    function animatePhysics3DRoll(finalValue, onComplete) {
+      const duration = 2100; // 2.1 секунды реалистичного броска и отскоков
+      const startTime = performance.now();
+
+      // Случайная траектория полёта по столу с отскоком от бортика
+      const startX = (Math.random() < 0.5 ? -1 : 1) * (1.1 + Math.random() * 0.4);
+      const startY = -1.2;
+      const bounce1X = -startX * 0.75;
+      const bounce1Y = 0.85;
+      const bounce2X = startX * 0.35;
+      const bounce2Y = -0.35;
+      const bounce3X = -startX * 0.12;
+      const bounce3Y = 0.12;
+
+      // Моменты ударов кубика о стол (в долях времени 0..1)
+      const tHit1 = 0.36;
+      const tHit2 = 0.64;
+      const tHit3 = 0.84;
+      let hit1Triggered = false;
+      let hit2Triggered = false;
+      let hit3Triggered = false;
+
+      // Количество полных оборотов по 3 осям во время полёта
+      const spinX = (4 + Math.floor(Math.random() * 3)) * Math.PI * 2;
+      const spinY = (4 + Math.floor(Math.random() * 3)) * Math.PI * 2;
+      const spinZ = (2 + Math.floor(Math.random() * 2)) * Math.PI * 2;
+
+      const targetQuat = faceTargetQuaternions[finalValue].clone();
+
+      function stepFrame(now) {
+        const elapsed = now - startTime;
+        const t = Math.min(1, elapsed / duration);
+
+        // 1. Вычисляем X, Y перемещение по столу и высоту прыжков Z (параболы с гравитацией)
+        let x = 0, y = 0, zHeight = 0;
+
+        if (t < tHit1) {
+          // Первый высокий бросок в воздух и падение на стол
+          const u = t / tHit1;
+          x = startX + (bounce1X - startX) * u;
+          y = startY + (bounce1Y - startY) * u;
+          zHeight = Math.sin(u * Math.PI) * 2.35;
+        } else if (t < tHit2) {
+          // Первый упругий отскок от стола
+          if (!hit1Triggered) {
+            hit1Triggered = true;
+            playBounceSound(1.0);
+            triggerHaptic("heavy");
+            spawnBounceRipple(bounce1X, bounce1Y);
+          }
+          const u = (t - tHit1) / (tHit2 - tHit1);
+          x = bounce1X + (bounce2X - bounce1X) * u;
+          y = bounce1Y + (bounce2Y - bounce1Y) * u;
+          zHeight = Math.sin(u * Math.PI) * 1.15;
+        } else if (t < tHit3) {
+          // Второй отскок поменьше
+          if (!hit2Triggered) {
+            hit2Triggered = true;
+            playBounceSound(0.65);
+            triggerHaptic("light");
+            spawnBounceRipple(bounce2X, bounce2Y);
+          }
+          const u = (t - tHit2) / (tHit3 - tHit2);
+          x = bounce2X + (bounce3X - bounce2X) * u;
+          y = bounce2Y + (bounce3Y - bounce2Y) * u;
+          zHeight = Math.sin(u * Math.PI) * 0.45;
+        } else {
+          // Третий короткий отскок и фиксация в центре
+          if (!hit3Triggered) {
+            hit3Triggered = true;
+            playBounceSound(0.35);
+            triggerHaptic("light");
+            spawnBounceRipple(bounce3X, bounce3Y);
+          }
+          const u = (t - tHit3) / (1 - tHit3);
+          const easeOut = 1 - Math.pow(1 - u, 3);
+          x = bounce3X * (1 - easeOut);
+          y = bounce3Y * (1 - easeOut);
+          zHeight = Math.sin(u * Math.PI) * 0.12;
+        }
+
+        // Применяем 3D-позицию к кубику (чем выше zHeight, тем ближе кубик к экрану)
+        d20Mesh.position.set(x, y, zHeight);
+
+        // Тень на столе смещается за кубиком и сжимается/размывается, когда кубик высоко в воздухе
+        if (shadowMesh) {
+          shadowMesh.position.set(x + 0.12 * zHeight, y - 0.18 - 0.12 * zHeight, -0.9);
+          const shadowScale = Math.max(0.45, 1.0 - zHeight * 0.18);
+          shadowMesh.scale.set(shadowScale, shadowScale, 1);
+          shadowMesh.material.opacity = Math.max(0.25, 0.85 - zHeight * 0.22);
+        }
+
+        // 2. Вращение в 3D: кубик крутится с затуханием и при t = 1 идеально встаёт на грань finalValue
+        const rem = Math.pow(1 - t, 2.35); // Плавное физическое торможение вращения
+        const spinEuler = new THREE.Euler(
+          spinX * rem,
+          spinY * rem,
+          spinZ * rem,
+          "XYZ"
+        );
+        const spinQuat = new THREE.Quaternion().setFromEuler(spinEuler);
+        d20Mesh.quaternion.copy(targetQuat).multiply(spinQuat);
+
+        if (t < 1) {
+          requestAnimationFrame(stepFrame);
+        } else {
+          d20Mesh.position.set(0, 0, 0);
+          d20Mesh.quaternion.copy(targetQuat);
+          if (shadowMesh) {
+            shadowMesh.position.set(0, -0.15, -0.9);
+            shadowMesh.scale.set(1, 1, 1);
+            shadowMesh.material.opacity = 0.85;
+          }
+          onComplete();
+        }
+      }
+
+      requestAnimationFrame(stepFrame);
+    }
+
+    /**************************************************************
+     * 3. КАТАЛОГ ИГР КЛУБА «НАСТОЛКА»
      **************************************************************/
     const CLUB_GAMES = [
       {
@@ -1329,21 +1645,19 @@
     ];
 
     /**************************************************************
-     * 3. СОСТОЯНИЕ И ИНТЕГРАЦИЯ С VK BRIDGE
+     * 4. СОСТОЯНИЕ И ИНТЕГРАЦИЯ С VK BRIDGE
      **************************************************************/
     const STORAGE_KEY = "nastolka_d20_state_v1";
     let soundEnabled = true;
-    let isRolling = false;
     let currentGameCategory = "all";
     let pendingDeletePromoId = null;
 
     let appState = {
-      lastRollDate: null,    // Формат YYYY-MM-DD
-      lastRollValue: null,   // Число 1..20
-      promos: []             // Массив сохранённых промокодов
+      lastRollDate: null,
+      lastRollValue: null,
+      promos: []
     };
 
-    // Инициализация VK Bridge и загрузка данных
     async function initApp() {
       createBackgroundSparks();
       loadLocalState();
@@ -1351,13 +1665,11 @@
       if (window.vkBridge) {
         try {
           await vkBridge.send("VKWebAppInit");
-          // Подтягиваем имя игрока из ВК для персонального приветствия
           const user = await vkBridge.send("VKWebAppGetUserInfo");
           if (user && user.first_name) {
             document.getElementById("greetingTitle").textContent =
               `${user.first_name}, испытай удачу кубов!`;
           }
-          // Синхронизируем с облачным хранилищем VK Storage
           const vkData = await vkBridge.send("VKWebAppStorageGet", { keys: [STORAGE_KEY] });
           if (vkData && vkData.keys && vkData.keys[0] && vkData.keys[0].value) {
             const parsed = JSON.parse(vkData.keys[0].value);
@@ -1367,11 +1679,11 @@
             }
           }
         } catch (err) {
-          // Если открыто вне ВК (просто в браузере на GitHub Pages), спокойно работаем через localStorage
-          console.log("Работа в автономном режиме браузера");
+          console.log("Автономный режим браузера");
         }
       }
 
+      init3DDiceScene();
       updateDailyUI();
       renderPromos();
       renderGames();
@@ -1413,17 +1725,16 @@
       }
     }
 
-    // Виброотклик на смартфонах внутри ВК
     function triggerHaptic(type = "light") {
       if (window.vkBridge) {
         vkBridge.send("VKWebAppTapticImpactOccurred", { style: type }).catch(() => {});
       } else if (navigator.vibrate) {
-        navigator.vibrate(type === "heavy" ? 50 : 15);
+        navigator.vibrate(type === "heavy" ? 45 : 18);
       }
     }
 
     /**************************************************************
-     * 4. ЗВУКОВОЙ СИНТЕЗАТОР (Web Audio API — без внешних файлов)
+     * 5. РЕАЛИСТИЧНЫЙ ЗВУК ОТСКОКОВ КУБИКА И ФАНФАР (Web Audio API)
      **************************************************************/
     let audioCtx = null;
     function getAudioCtx() {
@@ -1437,20 +1748,25 @@
       return audioCtx;
     }
 
-    function playTickSound(freq = 320) {
+    // Звук удара кости о деревянный/суконный стол
+    function playBounceSound(intensity = 1.0) {
       if (!soundEnabled) return;
       const ctx = getAudioCtx();
       if (!ctx) return;
+
       const osc = ctx.createOscillator();
       const gain = ctx.createGain();
       osc.type = "triangle";
-      osc.frequency.setValueAtTime(freq, ctx.currentTime);
-      gain.gain.setValueAtTime(0.08, ctx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+      osc.frequency.setValueAtTime(190 + intensity * 90, ctx.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(55, ctx.currentTime + 0.085);
+
+      gain.gain.setValueAtTime(0.22 * intensity, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.09);
+
       osc.connect(gain);
       gain.connect(ctx.destination);
       osc.start();
-      osc.stop(ctx.currentTime + 0.06);
+      osc.stop(ctx.currentTime + 0.09);
     }
 
     function playFanfare(isDiscount) {
@@ -1464,7 +1780,7 @@
         osc.type = isDiscount ? "sawtooth" : "triangle";
         const startTime = ctx.currentTime + idx * 0.09;
         osc.frequency.setValueAtTime(freq, startTime);
-        gain.gain.setValueAtTime(0.1, startTime);
+        gain.gain.setValueAtTime(0.11, startTime);
         gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.35);
         osc.connect(gain);
         gain.connect(ctx.destination);
@@ -1479,13 +1795,13 @@
     });
 
     /**************************************************************
-     * 5. МЕХАНИКА БРОСКА КУБИКА D20 И ГЕНЕРАЦИЯ ПРОМОКОДА
+     * 6. ЗАПУСК 3D-БРОСКА И ВЫДАЧА СКИДКИ
      **************************************************************/
     function canRollToday() {
       return appState.lastRollDate !== getTodayString();
     }
 
-    function generateStylizedPromoCode(prefix, discount) {
+    function generateStylizedPromoCode(prefix) {
       const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
       let rand = "";
       for (let i = 0; i < 4; i++) {
@@ -1503,57 +1819,43 @@
       }
 
       isRolling = true;
-      const wrapper = document.getElementById("d20Wrapper");
-      const faceText = document.getElementById("d20FaceText");
       const rollBtn = document.getElementById("rollBtn");
       const resultPanel = document.getElementById("resultPanel");
+      const landedPill = document.getElementById("landedNumberPill");
 
       rollBtn.disabled = true;
-      rollBtn.textContent = "🔮 Кубик вращается...";
+      rollBtn.textContent = "🎲 Кубик летит по столу...";
+      landedPill.textContent = "🔮 Бросок в процессе...";
       resultPanel.classList.remove("show");
-      wrapper.classList.remove("crit-hit");
-      wrapper.classList.add("rolling");
 
       const finalValue = getWeightedD20Roll();
-      let step = 0;
-      const totalSteps = 22;
+      playBounceSound(0.75);
+      triggerHaptic("light");
 
-      const rollInterval = setInterval(() => {
-        step++;
-        const tempNum = Math.floor(Math.random() * 20) + 1;
-        faceText.textContent = tempNum;
-        playTickSound(240 + step * 18);
-        triggerHaptic("light");
-
-        if (step >= totalSteps) {
-          clearInterval(rollInterval);
-          finishRoll(finalValue);
-        }
-      }, 75);
+      animatePhysics3DRoll(finalValue, () => {
+        finishRoll(finalValue);
+      });
     }
 
     function finishRoll(value) {
-      const wrapper = document.getElementById("d20Wrapper");
-      const faceText = document.getElementById("d20FaceText");
-
-      wrapper.classList.remove("rolling");
-      wrapper.classList.add("crit-hit");
-      faceText.textContent = value;
-
       const outcome = D20_OUTCOMES[value];
       const hasDiscount = outcome.discount > 0;
+      const landedPill = document.getElementById("landedNumberPill");
+
+      landedPill.textContent = hasDiscount
+        ? `🎉 Выпало: ${value} (Скидка ${outcome.discount}%!)`
+        : `✨ Выпала грань: ${value} из 20`;
 
       triggerHaptic("heavy");
       playFanfare(hasDiscount);
       spawnBurstParticles(hasDiscount);
 
-      // Сохраняем факт сегодняшнего броска
       appState.lastRollDate = getTodayString();
       appState.lastRollValue = value;
 
       let generatedCode = null;
       if (hasDiscount) {
-        generatedCode = generateStylizedPromoCode(outcome.prefix, outcome.discount);
+        generatedCode = generateStylizedPromoCode(outcome.prefix);
         const nowStr = new Date().toLocaleDateString("ru-RU", {
           day: "2-digit",
           month: "2-digit",
@@ -1594,7 +1896,6 @@
       gameRec.innerHTML = `🎲 <strong>Игра дня для вас в «Настолке»:</strong> ${outcome.game}`;
 
       if (outcome.discount > 0) {
-        // Если промокод передан или ищем последний в инвентаре за сегодня
         const codeToShow =
           promoCode ||
           (appState.promos[0] ? appState.promos[0].code : "NASTOLKA-PROMO");
@@ -1612,20 +1913,28 @@
     function updateDailyUI() {
       const rollBtn = document.getElementById("rollBtn");
       const cooldownBox = document.getElementById("cooldownBox");
-      const faceText = document.getElementById("d20FaceText");
+      const landedPill = document.getElementById("landedNumberPill");
 
       if (!canRollToday()) {
         rollBtn.disabled = true;
         rollBtn.textContent = "✅ Бросок на сегодня сделан";
         cooldownBox.classList.add("visible");
         if (appState.lastRollValue) {
-          faceText.textContent = appState.lastRollValue;
-          displayRollResult(appState.lastRollValue);
+          const val = appState.lastRollValue;
+          const out = D20_OUTCOMES[val];
+          landedPill.textContent = out && out.discount > 0
+            ? `🎉 Сегодня выпало: ${val} (Скидка ${out.discount}%)`
+            : `✨ Сегодня выпала грань: ${val} из 20`;
+          if (d20Mesh && faceTargetQuaternions[val]) {
+            d20Mesh.quaternion.copy(faceTargetQuaternions[val]);
+          }
+          displayRollResult(val);
         }
       } else {
         rollBtn.disabled = false;
-        rollBtn.textContent = "🎲 Бросить кубик D20";
+        rollBtn.textContent = "🎲 Бросить 3D-кубик D20";
         cooldownBox.classList.remove("visible");
+        landedPill.textContent = "Нажмите на стол или кнопку, чтобы бросить D20";
       }
     }
 
@@ -1647,7 +1956,7 @@
     }
 
     /**************************************************************
-     * 6. ИНВЕНТАРЬ ПРОМОКОДОВ И УДАЛЕНИЕ АДМИНИСТРАТОРОМ
+     * 7. ИНВЕНТАРЬ ПРОМОКОДОВ И УДАЛЕНИЕ АДМИНИСТРАТОРОМ
      **************************************************************/
     function renderPromos() {
       const list = document.getElementById("promoList");
@@ -1722,7 +2031,7 @@
     });
 
     /**************************************************************
-     * 7. КАТАЛОГ ИГР И НАВИГАЦИЯ
+     * 8. КАТАЛОГ ИГР И ПЕРЕКЛЮЧЕНИЕ ВКЛАДОК
      **************************************************************/
     function setGameCategory(cat, btn) {
       currentGameCategory = cat;
@@ -1774,29 +2083,31 @@
     }
 
     /**************************************************************
-     * 8. ВИЗУАЛЬНЫЕ ЭФФЕКТЫ И ЧАСТИЦЫ
+     * 9. ВИЗУАЛЬНЫЕ ЭФФЕКТЫ
      **************************************************************/
     function spawnBurstParticles(isGold) {
-      const stage = document.getElementById("d20Stage");
-      for (let i = 0; i < 24; i++) {
+      const arena = document.getElementById("diceArena");
+      for (let i = 0; i < 26; i++) {
         const p = document.createElement("div");
         p.className = "burst-particle";
+        p.style.left = "50%";
+        p.style.top = "50%";
         p.style.background = isGold
           ? i % 2 === 0 ? "#ffe8a3" : "#9d4edd"
           : i % 2 === 0 ? "#c77dff" : "#00e5ff";
-        stage.appendChild(p);
+        arena.appendChild(p);
 
-        const angle = (Math.PI * 2 * i) / 24;
-        const dist = 75 + Math.random() * 55;
+        const angle = (Math.PI * 2 * i) / 26;
+        const dist = 75 + Math.random() * 65;
         const tx = Math.cos(angle) * dist;
         const ty = Math.sin(angle) * dist;
 
         p.animate(
           [
-            { transform: "translate(0, 0) scale(1.2)", opacity: 1 },
-            { transform: `translate(${tx}px, ${ty}px) scale(0)`, opacity: 0 }
+            { transform: "translate(-50%, -50%) scale(1.3)", opacity: 1 },
+            { transform: `translate(calc(-50% + ${tx}px), calc(-50% + ${ty}px)) scale(0)`, opacity: 0 }
           ],
-          { duration: 650 + Math.random() * 250, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
+          { duration: 680 + Math.random() * 260, easing: "cubic-bezier(0.16, 1, 0.3, 1)" }
         ).onfinish = () => p.remove();
       }
     }
@@ -1824,4 +2135,4 @@
     window.addEventListener("DOMContentLoaded", initApp);
   </script>
 </body>
-</html>
+  </html>
