@@ -1324,14 +1324,9 @@
     };
 
     function getWeightedD20Roll() {
-      const r = Math.random() * 100;
-      if (r < 0.5) return 20;
-      if (r < 1.5) return 19;
-      if (r < 3.0) return 18;
-      if (r < 5.0) return 17;
-      return Math.floor(Math.random() * 16) + 1;
+      return Math.floor(Math.random() * 20) + 1;
     }
-
+    
     /**************************************************************
      * 2. 3D-ДВИЖОК D20 С АВТОПОДСТРОЙКОЙ РАЗМЕРА ХОЛСТА
      **************************************************************/
