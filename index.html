@@ -1778,8 +1778,9 @@
     }
 
     function canRollToday() {
-      return true;
+      return appState.lastRollDate !== getTodayString();
     }
+
 
     function handleRollClick() {
       if (isRolling) return;
