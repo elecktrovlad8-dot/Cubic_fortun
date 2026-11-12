@@ -1324,7 +1324,20 @@
     };
 
     function getWeightedD20Roll() {
-      return Math.floor(Math.random() * 20) + 1;
+      // Укажите желаемый шанс выпадения в процентах (от 0 до 100):
+      const chance20 = 0.2;  // Шанс на грань 20 (Скидка 20%)
+      const chance19 = 0.5;  // Шанс на грань 19 (Скидка 15%)
+      const chance18 = 30;  // Шанс на грань 18 (Скидка 10%)
+      const chance17 = 5;  // Шанс на грань 17 (Скидка 5%)
+
+      const r = Math.random() * 100;
+      if (r < chance20) return 20;
+      if (r < chance20 + chance19) return 19;
+      if (r < chance20 + chance19 + chance18) return 18;
+      if (r < chance20 + chance19 + chance18 + chance17) return 17;
+
+      // Все остальные проценты делятся поровну между гранями 1..16 (пророчества без скидки)
+      return Math.floor(Math.random() * 16) + 1;
     }
     
     /**************************************************************
