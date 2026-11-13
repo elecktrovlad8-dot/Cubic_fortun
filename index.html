@@ -526,16 +526,17 @@
     }
     .loot-code-value {
       font-family: monospace;
-      font-size: 1.18rem;
+      font-size: 1.12rem;
       font-weight: 900;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.2px;
       color: #fff;
       background: rgba(0, 0, 0, 0.55);
-      padding: 9px 12px;
+      padding: 9px 10px;
       border-radius: 10px;
       margin: 8px 0 6px;
       border: 1px dashed var(--gold-main);
       user-select: all;
+      word-break: break-all;
     }
     .loot-saved-hint {
       font-size: 0.72rem;
@@ -604,7 +605,7 @@
 
     .promo-code-display {
       font-family: monospace;
-      font-size: 1.12rem;
+      font-size: 1.08rem;
       font-weight: 900;
       color: #fff;
       background: rgba(0, 0, 0, 0.45);
@@ -612,9 +613,10 @@
       border-radius: 10px;
       padding: 10px;
       text-align: center;
-      letter-spacing: 1.5px;
+      letter-spacing: 1.2px;
       margin-bottom: 8px;
       user-select: all;
+      word-break: break-all;
     }
 
     .promo-prophecy-mini {
@@ -896,7 +898,7 @@
     }
     .modal-code-preview {
       font-family: monospace;
-      font-size: 1.05rem;
+      font-size: 1.02rem;
       font-weight: 900;
       color: #fff;
       background: rgba(0,0,0,0.5);
@@ -904,6 +906,7 @@
       border-radius: 8px;
       margin-bottom: 16px;
       border: 1px dashed var(--danger);
+      word-break: break-all;
     }
     .modal-buttons {
       display: flex;
@@ -1027,7 +1030,7 @@
           <!-- Появляется, если выпала скидка (17-20) -->
           <div class="loot-promo-box" id="lootPromoBox">
             <div class="loot-discount-label" id="lootDiscountLabel">🎉 Выпала редкая скидка 20%!</div>
-            <div class="loot-code-value" id="lootCodeValue">NASTOLKA-20-XXXX</div>
+            <div class="loot-code-value" id="lootCodeValue">NASTOLKA-ARCANE-XXXX</div>
             <div class="loot-saved-hint">
               Промокод автоматически сохранён в раздел «Мои скидки» 🎒
             </div>
@@ -1143,7 +1146,7 @@
         Покажите этот экран на стойке администратора клуба <strong>«Настолка»</strong> при оплате.<br><br>
         После нажатия кнопки <strong>«Подтвердить и применить»</strong> промокод будет погашен.
       </p>
-      <div class="modal-code-preview" id="modalCodePreview">NASTOLKA-15-XXXX</div>
+      <div class="modal-code-preview" id="modalCodePreview">NASTOLKA-ARCANE-XXXX</div>
       <div class="modal-buttons">
         <button class="modal-btn cancel" onclick="closeRedeemModal()">Отмена</button>
         <button class="modal-btn confirm" id="confirmRedeemBtn">Подтвердить и применить</button>
@@ -1174,8 +1177,95 @@
     }
 
     /**************************************************************
-     * 1. БАЗА ПРОРОЧЕСТВ D20 И СКИДКИ (17–20) — РОВНО 1 ИГРА ДНЯ
+     * 1. БАЗА ПРОРОЧЕСТВ D20 И ДИНАМИЧЕСКИЙ ГЕНЕРАТОР УНИКАЛЬНЫХ
+     *    ПРОМОКОДОВ И ПОДПИСЕЙ (ДЛЯ ГРАНЕЙ 17–20)
      **************************************************************/
+    // Большой пул тематических кодовых подписей внутри промокода (не привязанных к конкретной скидке)
+    const PROMO_CODE_TAGS = [
+      "ARCANE", "PHOENIX", "DRAGON", "PALADIN", "ORACLE", "VALKYRIE", "KRAKEN", "GRIFFIN",
+      "RELIC", "PORTAL", "ASTRAL", "MYTHIC", "VORTEX", "NEXUS", "ELIXIR", "CROWN",
+      "ARTIFACT", "ALCHEMIST", "CIPHER", "AEGIS", "ZENITH", "PRISM", "NOVA", "RUNE",
+      "GUILD", "TITAN", "SHADOW", "QUEST", "LEGEND", "CHRONO", "AVATAR", "SPARK",
+      "WARLOCK", "KNIGHT", "MIRAGE", "OBSIDIAN", "SOLARIS", "ECLIPSE", "COSMOS", "ENIGMA"
+    ];
+
+    // Пул уникальных текстовых подписей (первая и вторая часть комбинируются + проверяются на уникальность)
+    const SIGNATURE_ARTIFACTS = [
+      "Дар Древнего Архимага",
+      "Тайник Гильдии Приключенцев",
+      "Печать Королевского Казначея",
+      "Руна Истинного Зрения",
+      "Благословение Хозяина Таверны",
+      "Эликсир Чистой Удачи",
+      "Свиток Забытого Пророчества",
+      "Трофей Повелителя Подземелий",
+      "Амулет Звёздного Странника",
+      "Клятва Рыцаря Двадцатигранника",
+      "Козырь Мастера Иллюзий",
+      "Реликвия Фиолетового Дракона",
+      "Знак Тайного Ордена",
+      "Милость Богов Рандома",
+      "Кристалл Хранителя Миров",
+      "Артефакт Золотого Грифона",
+      "Песнь Странствующего Барда",
+      "Ключ от Секретной Сокровищницы",
+      "Талисман Непобедимого Тактика",
+      "Звезда Северной Цитадели",
+      "Корона Игрового Мастера",
+      "Компас Астрального Путника",
+      "Монета Счастливого Случая",
+      "Кодекс Легендарного Героя"
+    ];
+
+    const SIGNATURE_EPITHETS = [
+      "Сияющей Грани",
+      "Вечного Триумфа",
+      "Высшего Ранга",
+      "Древнего Завета",
+      "Тайного Круга",
+      "Золотого Дракона",
+      "Звёздного Пути",
+      "Полуночной Таверны",
+      "Изумрудного Замка",
+      "Пламенного Сердца",
+      "Девяти Королевств",
+      "Астрального Чертога",
+      "Серебряной Башни",
+      "Небесной Кузницы",
+      "Великого Мастера",
+      "Забытой Империи"
+    ];
+
+    const SIGNATURE_PROPHECIES = [
+      "Судьба улыбнулась вам в самый нужный момент! Этот уникальный артефакт дарует вам персональную скидку на посещение клуба «Настолка».",
+      "Вы открыли потайную дверь в сокровищницу подземелья! Хранители клуба вручают вам именной трофей и заряд везения на всю партию.",
+      "Магические руны выстроились в победную комбинацию! Ваш бросок материализовался в редкую награду для следующей игровой сессии.",
+      "Мастер Подземелий одобрительно кивает: такой бросок достоин особого вознаграждения в стенах «Настолки»!",
+      "Древний свиток озарился золотым свечением — боги настольных и виртуальных миров благословляют ваш вечер особой привилегией.",
+      "Легендарный лут найден! Покажите этот уникальный шифр на стойке клуба, чтобы активировать свою награду.",
+      "Звёзды сошлись над игровым столом: ваша харизма и удача принесли вам эксклюзивный трофей приключенца!",
+      "Хрустальный шар предсказал вам блестящую победу и приятный бонус для похода с друзьями в «Настолку»."
+    ];
+
+    const DISCOUNT_GAMES_POOL = [
+      "Dungeons & Dragons (D&D)",
+      "Сумерки Империи",
+      "Hogwarts Legacy",
+      "Alias",
+      "Бункер",
+      "Мафия с масками",
+      "Имаджинариум (19 выпусков)",
+      "Ticket to Ride: Европа",
+      "Дюна: Завоевание и дипломатия",
+      "CATAN (Колонизаторы)",
+      "CodeNames (Кодовые имена)",
+      "Unmatched: Красная Шапочка и Беовульф",
+      "Таверна «Красный Дракон» 18+",
+      "Эпичные схватки боевых магов 18+",
+      "It Takes Two",
+      "Star Wars: Tales from the Galaxy's Edge Enhanced Edition"
+    ];
+
     const D20_OUTCOMES = {
       1: {
         title: "1 — Критический провал!",
@@ -1290,45 +1380,140 @@
         game: "Unmatched: Красная Шапочка и Беовульф"
       },
       17: {
-        title: "17 — Благословение Барда (+Скидка 5%)",
+        title: "17 — Магический трофей (+Скидка 5%)",
         tier: "tier-legend",
         discount: 5,
-        prefix: "BARD5",
-        prophecy: "Струны судьбы сыграли победный аккорд! Ваша удача настолько высока, что материализовалась в приятную скидку 5% на посещение клуба «Настолка».",
+        prophecy: "Струны судьбы сыграли победный аккорд! Ваша удача материализовалась в приятную скидку 5% на посещение клуба «Настолка».",
         game: "Alias"
       },
       18: {
-        title: "18 — Сокровище Стража (+Скидка 10%)",
+        title: "18 — Дар Хранителей (+Скидка 10%)",
         tier: "tier-legend",
         discount: 10,
-        prefix: "GUARD10",
-        prophecy: "Вы нашли потайную комнату в древнем замке! В награду за зоркость хранители подземелья даруют вам скидку 10% и невероятное везение на весь вечер.",
+        prophecy: "Вы нашли потайную комнату в древнем замке! В награду за зоркость хранители подземелья даруют вам скидку 10%.",
         game: "Hogwarts Legacy"
       },
       19: {
-        title: "19 — Дыхание Дракона (+Скидка 15%)",
+        title: "19 — Легендарный артефакт (+Скидка 15%)",
         tier: "tier-legend",
         discount: 15,
-        prefix: "DRAGON15",
-        prophecy: "Фиолетовый дракон с герба «Настолки» склонил голову перед вашей мощью! Вам выпадает редкая скидка 15% и статус фаворита любой игровой партии.",
+        prophecy: "Фиолетовый дракон с герба «Настолки» склонил голову перед вашей мощью! Вам выпадает редкая скидка 15%.",
         game: "Сумерки Империи"
       },
       20: {
         title: "20 — НАТУРАЛЬНАЯ ДВАДЦАТКА! (+Скидка 20%)",
         tier: "tier-legend",
         discount: 20,
-        prefix: "CRIT20",
-        prophecy: "КРИТИЧЕСКИЙ УСПЕХ! Абсолютный максимум удачи! Боги настольных, ролевых и виртуальных миров вручают вам легендарную максимальную скидку 20%!",
+        prophecy: "КРИТИЧЕСКИЙ УСПЕХ! Абсолютный максимум удачи! Боги настольных, ролевых и виртуальных миров вручают вам максимальную скидку 20%!",
         game: "Dungeons & Dragons (D&D)"
       }
     };
+
+    // Криптографически стойкий генератор случайного индекса
+    function getSecureRandomInt(max) {
+      if (window.crypto && window.crypto.getRandomValues) {
+        const arr = new Uint32Array(1);
+        window.crypto.getRandomValues(arr);
+        return arr[0] % max;
+      }
+      return Math.floor(Math.random() * max);
+    }
+
+    // Генерация полностью уникального промокода: NASTOLKA-<РАЗНАЯ_ПОДПИСЬ>-<УНИКАЛЬНЫЙ_ХЭШ>
+    function generateUniquePromoCode() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      const usedCodes = Array.isArray(appState.usedCodes) ? appState.usedCodes : [];
+      const usedTags = Array.isArray(appState.usedTags) ? appState.usedTags : [];
+
+      // Выбираем подпись внутри кода, которая ещё не использовалась в последних бросках
+      let availableTags = PROMO_CODE_TAGS.filter(function (tag) {
+        return usedTags.indexOf(tag) === -1;
+      });
+      if (availableTags.length === 0) {
+        availableTags = PROMO_CODE_TAGS.slice();
+        appState.usedTags = [];
+      }
+      const chosenTag = availableTags[getSecureRandomInt(availableTags.length)];
+
+      let finalCode = "";
+      let attempts = 0;
+
+      do {
+        // Сочетаем крипто-случайные символы и энтропию времени для 100% уникальности
+        const timePart = Date.now().toString(36).toUpperCase().replace(/[^A-Z2-9]/g, "");
+        const timeSlice = timePart.slice(-2).padStart(2, chars.charAt(getSecureRandomInt(chars.length)));
+
+        let randPart = "";
+        for (let i = 0; i < 4; i++) {
+          randPart += chars.charAt(getSecureRandomInt(chars.length));
+        }
+
+        // Перемешиваем 6 символов уникального хвоста
+        const combined = (randPart.slice(0, 2) + timeSlice + randPart.slice(2)).split("");
+        for (let i = combined.length - 1; i > 0; i--) {
+          const j = getSecureRandomInt(i + 1);
+          const temp = combined[i];
+          combined[i] = combined[j];
+          combined[j] = temp;
+        }
+
+        finalCode = "NASTOLKA-" + chosenTag + "-" + combined.join("");
+        attempts++;
+      } while (usedCodes.indexOf(finalCode) !== -1 && attempts < 50);
+
+      if (!Array.isArray(appState.usedCodes)) appState.usedCodes = [];
+      if (!Array.isArray(appState.usedTags)) appState.usedTags = [];
+      appState.usedCodes.push(finalCode);
+      appState.usedTags.push(chosenTag);
+      if (appState.usedTags.length >= PROMO_CODE_TAGS.length) {
+        appState.usedTags.shift();
+      }
+
+      return finalCode;
+    }
+
+    // Генерация уникальной подписи и пророчества для выпавшей скидки (не привязана к конкретному проценту)
+    function generateUniqueSignatureForDiscount(rollValue, discount) {
+      const usedSignatures = Array.isArray(appState.usedSignatures) ? appState.usedSignatures : [];
+      let baseSignature = "";
+      let attempts = 0;
+
+      do {
+        const art = SIGNATURE_ARTIFACTS[getSecureRandomInt(SIGNATURE_ARTIFACTS.length)];
+        const epi = SIGNATURE_EPITHETS[getSecureRandomInt(SIGNATURE_EPITHETS.length)];
+        baseSignature = art + " " + epi;
+        attempts++;
+      } while (usedSignatures.indexOf(baseSignature) !== -1 && attempts < 60);
+
+      if (!Array.isArray(appState.usedSignatures)) appState.usedSignatures = [];
+      appState.usedSignatures.push(baseSignature);
+      if (appState.usedSignatures.length > 200) {
+        appState.usedSignatures.shift();
+      }
+
+      const prefixLabel = rollValue === 20
+        ? "20 — КРИТ! " + baseSignature
+        : rollValue + " — " + baseSignature;
+
+      const fullTitle = prefixLabel + " (+Скидка " + discount + "%)";
+      const prophecyText =
+        SIGNATURE_PROPHECIES[getSecureRandomInt(SIGNATURE_PROPHECIES.length)] +
+        " Ваша награда: скидка " + discount + "%!";
+      const recGame = DISCOUNT_GAMES_POOL[getSecureRandomInt(DISCOUNT_GAMES_POOL.length)];
+
+      return {
+        title: fullTitle,
+        prophecy: prophecyText,
+        game: recGame
+      };
+    }
 
     function getWeightedD20Roll() {
       // Укажите желаемый шанс выпадения в процентах (от 0 до 100):
       const chance20 = 0.2;  // Шанс на грань 20 (Скидка 20%)
       const chance19 = 0.5;  // Шанс на грань 19 (Скидка 15%)
-      const chance18 = 30;  // Шанс на грань 18 (Скидка 10%)
-      const chance17 = 5;  // Шанс на грань 17 (Скидка 5%)
+      const chance18 = 30;   // Шанс на грань 18 (Скидка 10%)
+      const chance17 = 5;    // Шанс на грань 17 (Скидка 5%)
 
       const r = Math.random() * 100;
       if (r < chance20) return 20;
@@ -1339,7 +1524,7 @@
       // Все остальные проценты делятся поровну между гранями 1..16 (пророчества без скидки)
       return Math.floor(Math.random() * 16) + 1;
     }
-    
+
     /**************************************************************
      * 2. 3D-ДВИЖОК D20 С АВТОПОДСТРОЙКОЙ РАЗМЕРА ХОЛСТА
      **************************************************************/
@@ -1794,7 +1979,6 @@
       return true;
     }
 
-
     function handleRollClick() {
       if (isRolling) return;
 
@@ -1824,15 +2008,6 @@
       });
     }
 
-    function generateStylizedPromoCode(prefix) {
-      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-      let rand = "";
-      for (let i = 0; i < 4; i++) {
-        rand += chars.charAt(Math.floor(Math.random() * chars.length));
-      }
-      return "NASTOLKA-" + prefix + "-" + rand;
-    }
-
     function finishRoll(value) {
       const outcome = D20_OUTCOMES[value];
       const hasDiscount = outcome.discount > 0;
@@ -1845,33 +2020,50 @@
       appState.lastRollValue = value;
 
       let generatedCode = null;
+      let customMeta = null;
+
       if (hasDiscount) {
-        generatedCode = generateStylizedPromoCode(outcome.prefix);
+        generatedCode = generateUniquePromoCode();
+        customMeta = generateUniqueSignatureForDiscount(value, outcome.discount);
+
         const nowStr = new Date().toLocaleDateString("ru-RU", {
           day: "2-digit",
           month: "2-digit",
           year: "numeric"
         });
+
+        appState.lastRollMeta = {
+          code: generatedCode,
+          title: customMeta.title,
+          prophecy: customMeta.prophecy,
+          game: customMeta.game
+        };
+
         appState.promos.unshift({
-          id: "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6),
+          id: "p_" + Date.now() + "_" + Math.random().toString(36).slice(2, 7),
           code: generatedCode,
           discount: outcome.discount,
           rollValue: value,
-          title: outcome.title,
+          title: customMeta.title,
+          prophecy: customMeta.prophecy,
           date: nowStr
         });
+      } else {
+        appState.lastRollMeta = null;
       }
 
       saveState();
       renderPromos();
-      displayRollResult(value, generatedCode);
+      displayRollResult(value, generatedCode, customMeta);
       updateDailyUI();
       isRolling = false;
     }
 
-    function displayRollResult(value, promoCode) {
+    function displayRollResult(value, promoCode, customMeta) {
       const outcome = D20_OUTCOMES[value];
       if (!outcome) return;
+
+      const meta = customMeta || appState.lastRollMeta || null;
 
       const panel = document.getElementById("resultPanel");
       const badge = document.getElementById("resBadge");
@@ -1884,14 +2076,17 @@
       badge.className = "roll-tier-badge " + outcome.tier;
       badge.textContent = "Грань D20: " + value;
       luckPct.textContent = "Уровень удачи: " + (value * 5) + "%";
-      title.textContent = outcome.title;
-      prophecy.textContent = outcome.prophecy;
-      gameRec.innerHTML = "🎲 <strong>Игра дня для вас в «Настолке»:</strong> " + outcome.game;
+
+      title.textContent = (meta && meta.title) ? meta.title : outcome.title;
+      prophecy.textContent = (meta && meta.prophecy) ? meta.prophecy : outcome.prophecy;
+      const gameToShow = (meta && meta.game) ? meta.game : outcome.game;
+      gameRec.innerHTML = "🎲 <strong>Игра дня для вас в «Настолке»:</strong> " + gameToShow;
 
       if (outcome.discount > 0) {
         const codeToShow =
           promoCode ||
-          (appState.promos[0] ? appState.promos[0].code : "NASTOLKA-PROMO");
+          (meta && meta.code) ||
+          (appState.promos[0] ? appState.promos[0].code : generateUniquePromoCode());
         document.getElementById("lootDiscountLabel").textContent =
           "🎉 Выпала редкая скидка " + outcome.discount + "%!";
         document.getElementById("lootCodeValue").textContent = codeToShow;
@@ -2509,7 +2704,11 @@
     let appState = {
       lastRollDate: null,
       lastRollValue: null,
-      promos: []
+      lastRollMeta: null,
+      promos: [],
+      usedCodes: [],
+      usedTags: [],
+      usedSignatures: []
     };
 
     function loadLocalState() {
@@ -2520,7 +2719,11 @@
           if (parsed && typeof parsed === "object") {
             appState.lastRollDate = parsed.lastRollDate || null;
             appState.lastRollValue = parsed.lastRollValue || null;
+            appState.lastRollMeta = parsed.lastRollMeta || null;
             appState.promos = Array.isArray(parsed.promos) ? parsed.promos : [];
+            appState.usedCodes = Array.isArray(parsed.usedCodes) ? parsed.usedCodes : [];
+            appState.usedTags = Array.isArray(parsed.usedTags) ? parsed.usedTags : [];
+            appState.usedSignatures = Array.isArray(parsed.usedSignatures) ? parsed.usedSignatures : [];
           }
         }
       } catch (e) {}
@@ -2560,8 +2763,18 @@
               if (parsed && typeof parsed === "object") {
                 appState.lastRollDate = parsed.lastRollDate || appState.lastRollDate;
                 appState.lastRollValue = parsed.lastRollValue || appState.lastRollValue;
+                appState.lastRollMeta = parsed.lastRollMeta || appState.lastRollMeta;
                 if (Array.isArray(parsed.promos)) {
                   appState.promos = parsed.promos;
+                }
+                if (Array.isArray(parsed.usedCodes)) {
+                  appState.usedCodes = parsed.usedCodes;
+                }
+                if (Array.isArray(parsed.usedTags)) {
+                  appState.usedTags = parsed.usedTags;
+                }
+                if (Array.isArray(parsed.usedSignatures)) {
+                  appState.usedSignatures = parsed.usedSignatures;
                 }
                 localStorage.setItem(STORAGE_KEY, JSON.stringify(appState));
                 updateDailyUI();
@@ -2799,4 +3012,4 @@
     });
   </script>
 </body>
-</html>
+  </html>
